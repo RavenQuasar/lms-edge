@@ -1709,16 +1709,26 @@ var gameHeartbeatTimer = null;
 var GAME_ITEMS = {heal:{e:'🍎',t:'heal'},shield:{e:'🛡️',t:'shield'},dmg:{e:'⚡',t:'dmg'}};
 
 async function initGame() {
+    console.log('initGame called, resetting state...');
+    
+    // 停止所有游戏定时器
+    if (gamePollTimer) clearTimeout(gamePollTimer);
+    if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
+    
     // 重置游戏状态
     gameState.inGame = false;
     gameState.inMatching = false;
     gameState.matchId = null;
     gameState.currentQ = null;
     gameState.waitingResult = false;
+    gameState.waitingAnswer = false;
     gameState.hp = 100;
     gameState.opponentHp = 100;
+    gameState.buffs = {dmg:0, shield:false};
+    gameState.selected = [];
+    gameState.canAnswer = false;
     
-    // 确保显示游戏大厅，隐藏游戏对战区域
+    // 强制显示游戏大厅，隐藏游戏对战区域
     document.getElementById('gameLobbyArea').style.display = 'block';
     document.getElementById('gamePlayArea').style.display = 'none';
     
@@ -1734,7 +1744,10 @@ async function initGame() {
     } else {
         document.getElementById('teacherGameArea').style.display = 'none';
         document.getElementById('studentGameArea').style.display = 'block';
-        checkMyGameMatch();
+        // 延迟检查匹配状态，确保UI先显示大厅
+        setTimeout(function() {
+            checkMyGameMatch();
+        }, 100);
     }
 }
 
@@ -1766,8 +1779,10 @@ async function checkMyGameMatch() {
         var res = await fetch(url);
         var data = await res.json();
         console.log('checkMyGameMatch:', data);
-        if (data.in_match && data.match) {
-            console.log('Found match:', data.match);
+        
+        // 只有在没有正在进行中的游戏时才进入游戏
+        if (data.in_match && data.match && !data.match.game_over) {
+            console.log('Found active match:', data.match);
             var match = data.match;
             gameState.inMatching = false;
             gameState.inGame = true;
@@ -2152,6 +2167,10 @@ function checkGameAnswer(answer) {
 }
 
 function submitGameResult(answer, isCorrect) {
+    // 立即显示自己的答题结果
+    var myResultEmoji = isCorrect ? '✅' : '❌';
+    var myResultMsg = isCorrect ? '你答对了！' : '你答错了！';
+    
     fetch(API_URL + '/api/game/answer', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({match_id: gameState.matchId, user_id: currentUser.id, answer: answer, is_correct: isCorrect})
@@ -2161,25 +2180,29 @@ function submitGameResult(answer, isCorrect) {
             gameState.waitingAnswer = true;
             
             if (data.round_result) {
+                // 双方都已答题，显示完整结果
                 var r = data.round_result;
                 var isP1 = gameState.isPlayer1;
                 var myDmg = isP1 ? r.p1_dmg : r.p2_dmg;
                 var myHp = isP1 ? r.p1_hp : r.p2_hp;
                 var oppHp = isP1 ? r.p2_hp : r.p1_hp;
+                var myCorrect = isP1 ? r.p1_correct : r.p2_correct;
+                var oppCorrect = isP1 ? r.p2_correct : r.p1_correct;
                 
                 var emoji = '';
                 var msg = '';
-                if (myDmg === 0) {
+                if (myCorrect && !oppCorrect) {
                     emoji = '✅';
-                    msg = '你答对了！';
-                    if (isP1 ? !r.p2_correct : !r.p1_correct) {
-                        msg += '对方答错，扣除20血';
-                    } else {
-                        msg += '对方也答对';
-                    }
-                } else {
+                    msg = '你答对了！对方答错，对方扣除20血';
+                } else if (!myCorrect && oppCorrect) {
                     emoji = '❌';
                     msg = '你答错了！扣除' + myDmg + '血';
+                } else if (myCorrect && oppCorrect) {
+                    emoji = '🤝';
+                    msg = '双方都答对了！';
+                } else {
+                    emoji = '😔';
+                    msg = '双方都答错了！各扣除10血';
                 }
                 
                 document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">' + emoji + '</span><br>' + msg + '<br><span style="color:#999">我:' + myHp + ' 对手:' + oppHp + '</span>';
@@ -2197,8 +2220,9 @@ function submitGameResult(answer, isCorrect) {
                     nextGameQuestion();
                 }, 2000);
             } else {
-                document.getElementById('gameMessage').textContent = '⏳ 已答题，等待对手...';
-                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';
+                // 只有自己答题，显示自己的结果并等待对手
+                document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">' + myResultEmoji + '</span><br>' + myResultMsg + '<br><span style="color:#999">等待对手答题...</span>';
+                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">已提交答案，等待对手...</div>';
             }
         }
     });

@@ -2072,41 +2072,6 @@ function submitGameResult(answer, isCorrect) {
         }
     });
 }
-                }
-                var myCorrect = isP1 ? r.p1_correct : r.p2_correct;
-                var myDmg = isP1 ? r.p2_dmg : r.p1_dmg;
-                var myHp = isP1 ? r.p1_hp : r.p2_hp;
-                var oppHp = isP1 ? r.p2_hp : r.p1_hp;
-                
-                var emoji = '';
-                var msg = '';
-                if (myCorrect && myDmg === 0) {
-                    emoji = '✅';
-                    msg = '你答对了！对方答错，扣除20血';
-                } else if (!myCorrect && myDmg > 0) {
-                    emoji = '❌';
-                    msg = '你答错了！扣除' + myDmg + '血';
-                } else if (myCorrect && myDmg > 0) {
-                    emoji = '🤝';
-                    msg = '双方都答对！';
-                } else {
-                    emoji = '😔';
-                    msg = '双方都答错！各扣10血';
-                }
-                
-                document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">' + emoji + '</span><br>' + msg + '<br><span style="color:#999">我:' + myHp + ' 对手:' + oppHp + '</span>';
-                
-                gameState.hp = myHp;
-                gameState.opponentHp = oppHp;
-                document.getElementById('heroGameHp').style.width = (myHp / 100 * 100) + '%';
-                document.getElementById('enemyGameHp').style.width = (oppHp / 100 * 100) + '%';
-            } else {
-                document.getElementById('gameMessage').textContent = '⏳ 已答题，等待对手...';
-                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';
-            }
-        }
-    });
-}
 
 function sendGameHeartbeat() {
     if (!gameState.matchId) return;

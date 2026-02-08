@@ -2045,14 +2045,12 @@ function pollGameState() {
                 document.getElementById('heroGameHp').style.width = (myHp / 100 * 100) + '%';
                 document.getElementById('enemyGameHp').style.width = (oppHp / 100 * 100) + '%';
                 
-                // 清除当前题目，准备加载下一题
-                gameState.currentQ = null;
+                // 双方都已答题，显示结果后自动进入下一题
                 gameState.waitingResult = true;
+                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">即将进入下一题...</div>';
                 
-                // 延迟加载下一题
                 setTimeout(function(){
-                    gameState.waitingResult = false;
-                    pollGameState();
+                    nextGameQuestion();
                 }, 2000);
                 return;
             }
@@ -2096,10 +2094,6 @@ function updateGameUI() {
     if (gameState.buffs.shield) buffs += '🛡️';
     if (gameState.buffs.dmg > 0) buffs += '⚡x' + gameState.buffs.dmg;
     document.getElementById('heroGameBuffs').textContent = buffs;
-    var msgs = [];
-    if (gameState.isMyTurn) msgs.push('🎯 轮到你了');
-    else msgs.push('⏳ 对手正在答题...');
-    document.getElementById('gameMessage').textContent = msgs.join(' | ');
 }
 
 function showGameQuestion(q) {
@@ -2195,12 +2189,13 @@ function submitGameResult(answer, isCorrect) {
                 document.getElementById('heroGameHp').style.width = (myHp / 100 * 100) + '%';
                 document.getElementById('enemyGameHp').style.width = (oppHp / 100 * 100) + '%';
                 
-                // 显示"确定"按钮，等待用户点击
+                // 双方都已答题，自动进入下一题
                 gameState.waitingResult = true;
-                gameState.roundResult = data.round_result;
-                document.getElementById('gameActionBtns').style.display = 'block';
-                document.getElementById('gameSubmitBtn').style.display = 'none';
-                document.getElementById('gameContinueBtn').style.display = 'block';
+                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">即将进入下一题...</div>';
+                
+                setTimeout(function(){
+                    nextGameQuestion();
+                }, 2000);
             } else {
                 document.getElementById('gameMessage').textContent = '⏳ 已答题，等待对手...';
                 document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';

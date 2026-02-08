@@ -2030,30 +2030,34 @@ function pollGameState() {
                 return;
             }
             
-            // 检查是否收到回合结果
+            // 检查是否收到回合结果（优先处理）
             if (data.round_result && !gameState.waitingResult) {
+                console.log('Received round_result:', data.round_result);
                 var r = data.round_result;
                 var isP1 = gameState.isPlayer1;
                 var myDmg = isP1 ? r.p1_dmg : r.p2_dmg;
                 var myHp = isP1 ? r.p1_hp : r.p2_hp;
                 var oppHp = isP1 ? r.p2_hp : r.p1_hp;
+                var myCorrect = isP1 ? r.p1_correct : r.p2_correct;
+                var oppCorrect = isP1 ? r.p2_correct : r.p1_correct;
                 
                 var emoji = '';
                 var msg = '';
-                if (myDmg === 0) {
+                if (myCorrect && !oppCorrect) {
                     emoji = '✅';
-                    msg = '你答对了！';
-                    if (isP1 ? !r.p2_correct : !r.p1_correct) {
-                        msg += '对方答错，扣除20血';
-                    } else {
-                        msg += '对方也答对';
-                    }
-                } else {
+                    msg = '你答对了！对方答错';
+                } else if (!myCorrect && oppCorrect) {
                     emoji = '❌';
-                    msg = '你答错了！扣除' + myDmg + '血';
+                    msg = '你答错了！对方答对';
+                } else if (myCorrect && oppCorrect) {
+                    emoji = '🤝';
+                    msg = '双方都答对了！';
+                } else {
+                    emoji = '😔';
+                    msg = '双方都答错了！';
                 }
                 
-                document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">' + emoji + '</span><br>' + msg + '<br><span style="color:#999">我:' + myHp + ' 对手:' + oppHp + '</span>';
+                document.getElementById('gameMessage').innerHTML = '<span style="font-size:24px">' + emoji + '</span><br><strong>' + msg + '</strong><br><span style="color:#999">我:' + myHp + ' 对手:' + oppHp + '</span>';
                 
                 gameState.hp = myHp;
                 gameState.opponentHp = oppHp;
@@ -2062,11 +2066,11 @@ function pollGameState() {
                 
                 // 双方都已答题，显示结果后自动进入下一题
                 gameState.waitingResult = true;
-                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">即将进入下一题...</div>';
+                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px;font-size:16px">即将进入下一题...</div>';
                 
                 setTimeout(function(){
                     nextGameQuestion();
-                }, 2000);
+                }, 3000);
                 return;
             }
             
@@ -2076,17 +2080,20 @@ function pollGameState() {
                 console.log('Loading question:', data.current_question);
                 gameState.currentQIdx = data.current_question_idx;
                 gameState.waitingAnswer = false;
+                gameState.waitingResult = false;  // 重置状态
                 showGameQuestion(data.current_question);
             } else if (data.current_question && data.current_question_idx !== gameState.currentQIdx) {
                 // 进入新的一题
                 console.log('New question:', data.current_question);
                 gameState.currentQIdx = data.current_question_idx;
                 gameState.waitingAnswer = false;
+                gameState.waitingResult = false;  // 重置状态
                 showGameQuestion(data.current_question);
-            } else if (data.player_answered && !gameState.waitingResult) {
-                // 当前玩家已答，等待对手
+            } else if (data.player_answered && !data.round_result && !gameState.waitingResult) {
+                // 当前玩家已答，但对方还没答，且没有收到回合结果
+                console.log('Waiting for opponent...');
                 gameState.waitingAnswer = true;
-                document.getElementById('gameMessage').textContent = '⏳ 已答题，等待对手...';
+                document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">⏳</span><br>已答题，等待对手...';
                 document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';
             } else if (!data.current_question && data.current_question_idx >= data.total_questions) {
                 // 所有题目答完了

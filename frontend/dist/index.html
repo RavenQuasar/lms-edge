@@ -235,28 +235,80 @@ tr:hover{background:#fafafa}
 
 <div id="gameSection" class="content-section">
 <h3 style="margin-bottom:15px">🎮 喜刷刷对战</h3>
-<div id="gameInfo" style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:15px">
-<div style="display:flex;justify-content:space-between;margin-bottom:10px">
-<span>💰 金币: <strong id="playerGold">0</strong></span>
-<span>🎖️ 勋章: <strong id="playerMedals">0</strong></span>
-<span>👤 胜场: <strong id="playerWins">0</strong></span>
-</div>
-<div id="gameInventory" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-</div>
+
+<!-- 教师区域 -->
 <div id="teacherGameArea" style="display:none">
 <h4 style="margin-bottom:10px">👨‍🏫 学生游戏状态</h4>
 <div id="studentGameStatus" style="background:#f5f5f5;padding:15px;border-radius:8px">
 <p style="color:#999;text-align:center">加载中...</p>
 </div>
 </div>
+
+<!-- 学生区域 -->
 <div id="studentGameArea">
-<div id="gameMatchArea" style="text-align:center;padding:30px">
+
+<!-- 游戏大厅：匹配前显示 -->
+<div id="gameLobbyArea">
+<!-- 玩家信息 -->
+<div id="gameInfo" style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:15px">
+<div style="display:flex;justify-content:space-between;margin-bottom:10px">
+<span>💰 金币: <strong id="playerGold">0</strong></span>
+<span>🎖️ 勋章: <strong id="playerMedals">0</strong></span>
+<span>👤 胜场: <strong id="playerWins">0</strong></span>
+</div>
+<div>
+<strong>我的背包：</strong>
+<div id="gameInventory" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+</div>
+</div>
+
+<!-- 商店 -->
+<div id="gameShop" style="background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:15px">
+<h4 style="margin-bottom:10px">🏪 道具商店</h4>
+<div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap">
+<div style="text-align:center;padding:10px;background:white;border-radius:8px;cursor:pointer" onclick="buyGameItem('heal')">
+<div style="font-size:30px">🍎</div>
+<div style="font-size:12px">苹果</div>
+<div style="color:#e74c3c;font-weight:bold">5金币</div>
+<div style="font-size:11px;color:#666">恢复40血</div>
+</div>
+<div style="text-align:center;padding:10px;background:white;border-radius:8px;cursor:pointer" onclick="buyGameItem('shield')">
+<div style="font-size:30px">🛡️</div>
+<div style="font-size:12px">护盾</div>
+<div style="color:#e74c3c;font-weight:bold">8金币</div>
+<div style="font-size:11px;color:#666">抵挡一次伤害</div>
+</div>
+<div style="text-align:center;padding:10px;background:white;border-radius:8px;cursor:pointer" onclick="buyGameItem('dmg')">
+<div style="font-size:30px">⚡</div>
+<div style="font-size:12px">狂暴</div>
+<div style="color:#e74c3c;font-weight:bold">10金币</div>
+<div style="font-size:11px;color:#666">下次伤害翻倍</div>
+</div>
+</div>
+</div>
+
+<!-- 排行榜 -->
+<h3 style="margin-bottom:15px">🏆 排行榜</h3>
+<div id="gameLeaderboard" style="background:white;padding:15px;border-radius:8px;margin-bottom:15px">
+<table style="width:100%;font-size:13px">
+<thead><tr><th>排名</th><th>玩家</th><th>勋章</th><th>胜场</th></tr></thead>
+<tbody id="leaderboardBody"></tbody>
+</table>
+</div>
+
+<!-- 匹配按钮 -->
+<div id="gameMatchArea" style="text-align:center;padding:30px;background:#f8f9fa;border-radius:8px">
 <div id="matchStatus" style="margin-bottom:20px;color:#666;font-size:14px">点击开始匹配</div>
 <button id="matchBtn" class="btn btn-primary" onclick="startMatch()" style="padding:15px 40px;font-size:16px">🎮 开始匹配</button>
 </div>
+</div>
+
+<!-- 游戏对战区域：匹配后显示 -->
 <div id="gamePlayArea" style="display:none">
+<!-- 对战舞台 -->
 <div id="gameBattleStage" style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:15px">
 <div style="display:flex;justify-content:space-around;align-items:center">
+<!-- 左侧：玩家自己 -->
 <div id="gameHeroNode" style="text-align:center">
 <div id="heroGameAvatar" style="font-size:50px">🧙‍♀️</div>
 <div style="margin-top:5px;font-weight:bold">我</div>
@@ -266,6 +318,7 @@ tr:hover{background:#fafafa}
 <div id="heroGameBuffs" style="font-size:16px"></div>
 </div>
 <div style="font-size:24px;color:#999">VS</div>
+<!-- 右侧：对手 -->
 <div id="gameEnemyNode" style="text-align:center">
 <div id="enemyGameAvatar" style="font-size:50px">👾</div>
 <div id="enemyGameName" style="margin-top:5px;font-weight:bold">对手</div>
@@ -276,18 +329,24 @@ tr:hover{background:#fafafa}
 </div>
 <div id="gameMessage" style="text-align:center;margin:10px 0;font-size:13px;color:#667eea;font-weight:bold"></div>
 </div>
+
+<!-- 答题区域 -->
 <div id="gameQuizArea" style="background:white;padding:20px;border-radius:8px;border:1px solid #eee">
 <div id="gameQType" style="display:inline-block;padding:2px 8px;background:#dfe6e9;border-radius:4px;font-size:11px;margin-bottom:8px">题型</div>
 <div id="gameQText" style="font-size:16px;font-weight:bold;color:#333;margin-bottom:15px;line-height:1.4">题目加载中...</div>
 <div id="gameOptions" style="display:grid;grid-gap:10px"></div>
 <div id="gameActionBtns" style="margin-top:15px;text-align:center;display:none">
 <button id="gameSubmitBtn" class="btn btn-primary" onclick="submitGameAnswer()">确认提交</button>
-<button id="gameContinueBtn" class="btn" style="background:#55efc4;color:white" onclick="nextGameQuestion()">继续</button>
+<button id="gameContinueBtn" class="btn" style="background:#55efc4;color:white;display:none" onclick="nextGameQuestion()">确定</button>
 </div>
 </div>
+
 <button class="btn btn-danger" onclick="quitGame()" style="margin-top:15px;width:100%">认输退出</button>
 </div>
+
 </div>
+
+<!-- 游戏结果弹窗 -->
 <div id="gameResultModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:2000;justify-content:center;align-items:center">
 <div style="background:white;padding:30px;border-radius:15px;text-align:center;max-width:350px">
 <div id="resultEmoji" style="font-size:60px;margin-bottom:15px"></div>
@@ -297,13 +356,7 @@ tr:hover{background:#fafafa}
 <button class="btn btn-primary" onclick="closeGameResult()">返回游戏大厅</button>
 </div>
 </div>
-<h3 style="margin-top:30px;margin-bottom:15px">🏆 排行榜</h3>
-<div id="gameLeaderboard" style="background:white;padding:15px;border-radius:8px">
-<table style="width:100%;font-size:13px">
-<thead><tr><th>排名</th><th>玩家</th><th>勋章</th><th>胜场</th></tr></thead>
-<tbody id="leaderboardBody"></tbody>
-</table>
-</div>
+
 </div>
 
 <div id="logsSection" class="content-section">
@@ -1717,8 +1770,19 @@ async function checkMyGameMatch() {
             gameState.opponentMaxHp = 100;
             gameState.buffs = {dmg:0, shield:false};
             
-            document.getElementById('gameMatchArea').style.display = 'none';
+            // 隐藏游戏大厅，显示游戏对战区域
+            document.getElementById('gameLobbyArea').style.display = 'none';
             document.getElementById('gamePlayArea').style.display = 'block';
+            
+            // 设置角色头像：Player1是英雄(左侧)，Player2是怪物(左侧)
+            if (gameState.isPlayer1) {
+                document.getElementById('heroGameAvatar').textContent = '🧙‍♀️';
+                document.getElementById('enemyGameAvatar').textContent = '👾';
+            } else {
+                document.getElementById('heroGameAvatar').textContent = '👾';
+                document.getElementById('enemyGameAvatar').textContent = '🧙‍♀️';
+            }
+            
             document.getElementById('enemyGameName').textContent = gameState.opponent.full_name || gameState.opponent.username;
             document.getElementById('heroGameHp').style.width = '100%';
             document.getElementById('enemyGameHp').style.width = '100%';
@@ -1799,8 +1863,19 @@ async function startMatch() {
             gameState.buffs = {dmg:0, shield:false};
             gameState.waitingResult = false;
             
-            document.getElementById('gameMatchArea').style.display = 'none';
+            // 隐藏游戏大厅，显示游戏对战区域
+            document.getElementById('gameLobbyArea').style.display = 'none';
             document.getElementById('gamePlayArea').style.display = 'block';
+            
+            // 设置角色头像：Player1是英雄(左侧)，Player2是怪物(左侧)
+            if (gameState.isPlayer1) {
+                document.getElementById('heroGameAvatar').textContent = '🧙‍♀️';
+                document.getElementById('enemyGameAvatar').textContent = '👾';
+            } else {
+                document.getElementById('heroGameAvatar').textContent = '👾';
+                document.getElementById('enemyGameAvatar').textContent = '🧙‍♀️';
+            }
+            
             document.getElementById('enemyGameName').textContent = gameState.opponent.full_name || gameState.opponent.username;
             document.getElementById('heroGameHp').style.width = '100%';
             document.getElementById('enemyGameHp').style.width = '100%';
@@ -1841,8 +1916,19 @@ function checkMyGameMatchAfterStart() {
                     gameState.opponentMaxHp = 100;
                     gameState.buffs = {dmg:0, shield:false};
                     
-                    document.getElementById('gameMatchArea').style.display = 'none';
+                    // 隐藏游戏大厅，显示游戏对战区域
+                    document.getElementById('gameLobbyArea').style.display = 'none';
                     document.getElementById('gamePlayArea').style.display = 'block';
+                    
+                    // 设置角色头像：Player1是英雄(左侧)，Player2是怪物(左侧)
+                    if (gameState.isPlayer1) {
+                        document.getElementById('heroGameAvatar').textContent = '🧙‍♀️';
+                        document.getElementById('enemyGameAvatar').textContent = '👾';
+                    } else {
+                        document.getElementById('heroGameAvatar').textContent = '👾';
+                        document.getElementById('enemyGameAvatar').textContent = '🧙‍♀️';
+                    }
+                    
                     document.getElementById('enemyGameName').textContent = gameState.opponent.full_name || gameState.opponent.username;
                     document.getElementById('heroGameHp').style.width = '100%';
                     document.getElementById('enemyGameHp').style.width = '100%';
@@ -2093,15 +2179,12 @@ function submitGameResult(answer, isCorrect) {
                 document.getElementById('heroGameHp').style.width = (myHp / 100 * 100) + '%';
                 document.getElementById('enemyGameHp').style.width = (oppHp / 100 * 100) + '%';
                 
-                // 清除当前题目，准备加载下一题
-                gameState.currentQ = null;
+                // 显示"确定"按钮，等待用户点击
                 gameState.waitingResult = true;
-                
-                // 延迟加载下一题
-                setTimeout(function(){
-                    gameState.waitingResult = false;
-                    pollGameState();
-                }, 2000);
+                gameState.roundResult = data.round_result;
+                document.getElementById('gameActionBtns').style.display = 'block';
+                document.getElementById('gameSubmitBtn').style.display = 'none';
+                document.getElementById('gameContinueBtn').style.display = 'block';
             } else {
                 document.getElementById('gameMessage').textContent = '⏳ 已答题，等待对手...';
                 document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';
@@ -2119,35 +2202,66 @@ function sendGameHeartbeat() {
 }
 
 function nextGameQuestion() {
+    // 用户点击"确定"按钮，准备进入下一题
+    gameState.waitingResult = false;
     gameState.waitingAnswer = false;
-    var opts = document.getElementById('gameOptions');
-    opts.innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';
+    gameState.currentQ = null;
+    document.getElementById('gameActionBtns').style.display = 'none';
+    document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">加载下一题...</div>';
     document.getElementById('gameQText').textContent = '...';
     document.getElementById('gameQType').textContent = '等待';
-    document.getElementById('gameActionBtns').style.display = 'none';
-    gameState.currentQ = null;
+    
+    // 立即轮询获取下一题
     if (gameState.inGame && gameState.matchId) {
         pollGameState();
     }
 }
 
-function useGameItem(idx) {
-    var item = gameState.inventory[idx];
-    if (!item) return;
-    if (item.t === 'heal') {
-        gameState.hp = Math.min(gameState.maxHp, gameState.hp + 40);
-        showGameMessage('使用了苹果，恢复40血量');
-    } else if (item.t === 'shield') {
-        gameState.buffs.shield = true;
-        showGameMessage('使用护盾，下次伤害无效');
-    } else if (item.t === 'dmg') {
-        gameState.buffs.dmg = 2;
-        showGameMessage('使用狂暴，下次伤害翻倍');
+function buyGameItem(type) {
+    var prices = {heal: 5, shield: 8, dmg: 10};
+    var price = prices[type];
+    var currentGold = parseInt(document.getElementById('playerGold').textContent);
+    
+    if (currentGold < price) {
+        alert('金币不足！');
+        return;
     }
-    gameState.inventory.splice(idx, 1);
+    
+    // 扣除金币
+    var newGold = currentGold - price;
+    document.getElementById('playerGold').textContent = newGold;
+    gameState.playerData.gold = newGold;
+    
+    // 添加道具到背包
+    var itemNames = {heal: '苹果', shield: '护盾', dmg: '狂暴'};
+    var itemEmojis = {heal: '🍎', shield: '🛡️', dmg: '⚡'};
+    gameState.inventory.push({e: itemEmojis[type], t: type, name: itemNames[type]});
     renderGameInventory();
-    updateGameUI();
     saveGameInventory();
+    
+    alert('购买成功！');
+}
+
+function useGameItem(idx) {
+    if (gameState.inGame) {
+        // 游戏中才能使用道具
+        var item = gameState.inventory[idx];
+        if (!item) return;
+        if (item.t === 'heal') {
+            gameState.hp = Math.min(gameState.maxHp, gameState.hp + 40);
+            showGameMessage('使用了苹果，恢复40血量');
+        } else if (item.t === 'shield') {
+            gameState.buffs.shield = true;
+            showGameMessage('使用护盾，下次伤害无效');
+        } else if (item.t === 'dmg') {
+            gameState.buffs.dmg = 2;
+            showGameMessage('使用狂暴，下次伤害翻倍');
+        }
+        gameState.inventory.splice(idx, 1);
+        renderGameInventory();
+        updateGameUI();
+        saveGameInventory();
+    }
 }
 
 function showGameMessage(msg) {
@@ -2201,11 +2315,15 @@ function handleGameOver(data) {
 function showGameResult(win, title, gold) {
     gameState.matchId = null;
     gameState.opponent = null;
+    gameState.inGame = false;
+    
+    // 隐藏游戏对战区域，显示游戏大厅
     document.getElementById('gamePlayArea').style.display = 'none';
-    document.getElementById('gameMatchArea').style.display = 'block';
+    document.getElementById('gameLobbyArea').style.display = 'block';
     document.getElementById('matchBtn').disabled = false;
     document.getElementById('matchBtn').textContent = '🎮 开始匹配';
     document.getElementById('matchStatus').textContent = '点击开始匹配';
+    
     var modal = document.getElementById('gameResultModal');
     modal.style.display = 'flex';
     document.getElementById('resultEmoji').textContent = win === true ? '🏆' : (win === 'draw' ? '🤝' : '💔');

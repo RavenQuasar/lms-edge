@@ -12,8 +12,20 @@ import hashlib
 import time
 import uuid
 import shutil
+import logging
 from datetime import datetime, timedelta
 from functools import wraps
+
+# 配置日志
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('/tmp/lms_game.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -1084,6 +1096,8 @@ def get_game_state():
     match_id = request.args.get('match_id')
     user_id = request.args.get('user_id', type=int)
     
+    logger.info(f"[API] get_game_state called: match_id={match_id}, user_id={user_id}")
+    
     matches = load_json(MATCHES_FILE, [])
     match = None
     match_idx = -1
@@ -1154,14 +1168,13 @@ def get_game_state():
     
     # 检查双方是否都答题了
     both_answered = match['player1_answered'] and match['player2_answered']
-    
-    # 判断当前玩家是否已经答题
     player_answered = match['player1_answered'] if is_p1 else match['player2_answered']
-    
-    # 检查是否需要返回上一回合的结果
     last_round_result = match.get('last_round_result')
     
+    logger.info(f"[API] get_game_state: user={user_id}, is_p1={is_p1}, current_idx={current_idx}, both_answered={both_answered}, player_answered={player_answered}, has_round_result={last_round_result is not None}")
+    
     if last_round_result:
+        logger.info(f"[API] get_game_state: Returning round_result for user={user_id}, processed_by={last_round_result.get('processed_by', [])}")
         # 检查当前玩家是否已处理过上一回合结果
         processed_by = last_round_result.get('processed_by', [])
         if not isinstance(processed_by, list):
@@ -1217,6 +1230,8 @@ def submit_game_answer():
     answer = data.get('answer')
     is_correct = data.get('is_correct')
     
+    logger.info(f"[API] submit_game_answer called: match_id={match_id}, user_id={user_id}, answer={answer}, is_correct={is_correct}")
+    
     matches = load_json(MATCHES_FILE, [])
     match = None
     match_idx = -1
@@ -1236,16 +1251,19 @@ def submit_game_answer():
         match['player1_answer'] = answer
         match['player1_correct'] = is_correct
         match['player1_answered'] = True
+        logger.info(f"[API] Player {user_id} (P1) answered: {answer}, correct={is_correct}")
     else:
         match['player2_answer'] = answer
         match['player2_correct'] = is_correct
         match['player2_answered'] = True
+        logger.info(f"[API] Player {user_id} (P2) answered: {answer}, correct={is_correct}")
+    
+    logger.info(f"[API] Both answered: P1={match['player1_answered']}, P2={match['player2_answered']}")
     
     # 检查双方是否都答题了
     round_result = None
     if match['player1_answered'] and match['player2_answered']:
-        p1_correct = match['player1_correct']
-        p2_correct = match['player2_correct']
+        logger.info("[API] Both players answered, processing round result")
         
         # 计算伤害
         dmg_p1 = 0
@@ -1326,6 +1344,9 @@ def submit_game_answer():
     response = {'success': True, 'player_answered': True}
     if round_result:
         response['round_result'] = round_result
+        logger.info(f"[API] Returning round_result: {round_result}")
+    else:
+        logger.info("[API] Returning player_answered only, waiting for opponent")
     
     return jsonify(response)
 

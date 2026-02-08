@@ -1985,15 +1985,17 @@ function checkMyGameMatchAfterStart() {
 
 function pollGameState() {
     if (!gameState.inGame) {
-        console.log('pollGameState skipped: inGame=', gameState.inGame);
+        console.log('[LOG] pollGameState skipped: inGame=', gameState.inGame);
         return;
     }
 
     var url = API_URL + '/api/game/state?match_id=' + gameState.matchId + '&user_id=' + currentUser.id;
+    console.log('[LOG] pollGameState calling:', url);
+    console.log('[LOG] currentQ:', gameState.currentQ, 'waitingResult:', gameState.waitingResult, 'currentQIdx:', gameState.currentQIdx);
     fetch(url)
         .then(function(res){return res.json();})
         .then(function(data){
-            console.log('pollGameState:', data);
+            console.log('[LOG] pollGameState response:', JSON.stringify(data));
 
             if (!data.success) {
                 console.log('pollGameState failed:', data.message);
@@ -2031,8 +2033,9 @@ function pollGameState() {
             }
             
             // 检查是否收到回合结果（优先处理）
+            console.log('[LOG] Checking round_result:', 'data.round_result=' + !!data.round_result, 'waitingResult=' + gameState.waitingResult, 'both_answered=' + data.both_answered);
             if (data.round_result && !gameState.waitingResult) {
-                console.log('Received round_result:', data.round_result);
+                console.log('[LOG] Processing round_result:', JSON.stringify(data.round_result));
                 var r = data.round_result;
                 var isP1 = gameState.isPlayer1;
                 var myDmg = isP1 ? r.p1_dmg : r.p2_dmg;
@@ -2076,9 +2079,10 @@ function pollGameState() {
             }
             
             // 检查是否进入下一题
+            console.log('[LOG] Checking question load:', 'current_question=' + !!data.current_question, 'currentQ=' + !!gameState.currentQ, 'question_idx=' + data.current_question_idx + ' vs ' + gameState.currentQIdx);
             if (data.current_question && !gameState.currentQ) {
                 // 第一次加载题目或题目未显示
-                console.log('Loading question:', data.current_question);
+                console.log('[LOG] Loading question:', data.current_question);
                 gameState.currentQIdx = data.current_question_idx;
                 gameState.waitingAnswer = false;
                 gameState.waitingResult = false;  // 重置状态
@@ -2179,10 +2183,12 @@ function submitGameResult(answer, isCorrect) {
     var myResultEmoji = isCorrect ? '✅' : '❌';
     var myResultMsg = isCorrect ? '你答对了！' : '你答错了！';
     
+    console.log('[LOG] submitGameResult:', 'matchId=' + gameState.matchId, 'answer=' + answer, 'isCorrect=' + isCorrect);
     fetch(API_URL + '/api/game/answer', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({match_id: gameState.matchId, user_id: currentUser.id, answer: answer, is_correct: isCorrect})
     }).then(function(res){return res.json();}).then(function(data){
+        console.log('[LOG] submitGameResult response:', JSON.stringify(data));
         if (data.success) {
             document.getElementById('gameSubmitBtn').style.display = 'none';
             gameState.waitingAnswer = true;
@@ -2247,6 +2253,7 @@ function sendGameHeartbeat() {
 
 function nextGameQuestion() {
     // 用户点击"确定"按钮，准备进入下一题
+    console.log('[LOG] nextGameQuestion called, inGame=' + gameState.inGame + ', matchId=' + gameState.matchId);
     gameState.waitingResult = false;
     gameState.waitingAnswer = false;
     gameState.currentQ = null;
@@ -2257,7 +2264,10 @@ function nextGameQuestion() {
     
     // 立即轮询获取下一题
     if (gameState.inGame && gameState.matchId) {
+        console.log('[LOG] nextGameQuestion calling pollGameState');
         pollGameState();
+    } else {
+        console.log('[LOG] nextGameQuestion NOT calling pollGameState, inGame=' + gameState.inGame + ', matchId=' + gameState.matchId);
     }
 }
 

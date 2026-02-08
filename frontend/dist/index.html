@@ -2292,13 +2292,24 @@ function quitGame(forced) {
     if (!forced && !confirm('确定要认输退出吗？')) return;
     if (gamePollTimer) clearTimeout(gamePollTimer);
     if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
+    
+    // 保存matchId，然后清空状态
+    var matchId = gameState.matchId;
     gameState.inGame = false;
     gameState.inMatching = false;
     gameState.matchId = null;
+    gameState.currentQ = null;
+    
+    // 立即显示游戏大厅
+    document.getElementById('gameLobbyArea').style.display = 'block';
+    document.getElementById('gamePlayArea').style.display = 'none';
+    
     fetch(API_URL + '/api/game/quit', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({match_id: gameState.matchId, user_id: currentUser.id})
+        body:JSON.stringify({match_id: matchId, user_id: currentUser.id})
     }).then(function(res){return res.json();}).then(function(){
+        showGameResult(false, '你认输了', 0);
+    }).catch(function(){
         showGameResult(false, '你认输了', 0);
     });
 }
@@ -2324,9 +2335,22 @@ function handleGameOver(data) {
 }
 
 function showGameResult(win, title, gold) {
+    // 完全重置游戏状态
     gameState.matchId = null;
     gameState.opponent = null;
     gameState.inGame = false;
+    gameState.inMatching = false;
+    gameState.currentQ = null;
+    gameState.currentQIdx = 0;
+    gameState.waitingResult = false;
+    gameState.waitingAnswer = false;
+    gameState.hp = 100;
+    gameState.opponentHp = 100;
+    gameState.buffs = {dmg:0, shield:false};
+    
+    // 停止所有定时器
+    if (gamePollTimer) clearTimeout(gamePollTimer);
+    if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
     
     // 隐藏游戏对战区域，显示游戏大厅
     document.getElementById('gamePlayArea').style.display = 'none';

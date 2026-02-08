@@ -1943,6 +1943,16 @@ function pollGameState() {
                 gameState.waitingResult = true;
                 document.getElementById('heroGameHp').style.width = (myHp / 100 * 100) + '%';
                 document.getElementById('enemyGameHp').style.width = (oppHp / 100 * 100) + '%';
+                
+                // 清除当前题目状态，准备加载下一题
+                gameState.currentQ = null;
+                
+                // 延迟加载下一题
+                setTimeout(function(){
+                    gameState.waitingResult = false;
+                    pollGameState();
+                }, 2000);
+                return;
             }
             
             // 检查是否进入下一题
@@ -2097,6 +2107,16 @@ function submitGameResult(answer, isCorrect) {
                 gameState.opponentHp = oppHp;
                 document.getElementById('heroGameHp').style.width = (myHp / 100 * 100) + '%';
                 document.getElementById('enemyGameHp').style.width = (oppHp / 100 * 100) + '%';
+                
+                // 清除当前题目，准备加载下一题
+                gameState.currentQ = null;
+                gameState.waitingResult = true;
+                
+                // 延迟加载下一题
+                setTimeout(function(){
+                    gameState.waitingResult = false;
+                    pollGameState();
+                }, 2000);
             } else {
                 document.getElementById('gameMessage').textContent = '⏳ 已答题，等待对手...';
                 document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';

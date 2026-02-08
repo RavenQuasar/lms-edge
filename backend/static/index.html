@@ -2174,17 +2174,12 @@ function selectGameOption(idx, btn, letter, isMulti) {
 }
 
 function submitGameAnswer() {
-    console.log('[DEBUG] submitGameAnswer called - selected:', gameState.selected);
-    if (!gameState.canAnswer || gameState.selected.length === 0) {
-        console.log('[DEBUG] submitGameAnswer early return');
+    if (gameState.selected.length === 0) {
         return;
     }
     gameState.canAnswer = false;
     var answer = gameState.selected.join('');
-    console.log('[DEBUG] Answer:', answer);
-    var isCorrect = checkGameAnswer(answer);
-    console.log('[DEBUG] isCorrect:', isCorrect);
-    submitGameResult(answer, isCorrect);
+    submitGameResult(answer);
 }
 
 function checkGameAnswer(answer) {
@@ -2192,16 +2187,11 @@ function checkGameAnswer(answer) {
     return answer.split(',').sort().join('') === correct;
 }
 
-function submitGameResult(answer, isCorrect) {
-    console.log('[DEBUG] submitGameResult - sending to backend:', answer, isCorrect);
-    console.log('[DEBUG] currentQ:', gameState.currentQ);
-    
-    console.log('[LOG] submitGameResult:', 'matchId=' + gameState.matchId, 'answer=' + answer, 'isCorrect=' + isCorrect);
+function submitGameResult(answer) {
     fetch(API_URL + '/api/game/answer', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({match_id: gameState.matchId, user_id: currentUser.id, answer: answer, is_correct: isCorrect})
+        body:JSON.stringify({match_id: gameState.matchId, user_id: currentUser.id, answer: answer})
     }).then(function(res){return res.json();}).then(function(data){
-        console.log('[LOG] submitGameResult response:', JSON.stringify(data));
         if (data.success) {
             document.getElementById('gameSubmitBtn').style.display = 'none';
             gameState.waitingAnswer = true;

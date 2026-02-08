@@ -1,0 +1,2472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LMS-Edge 班级局域网教学管理系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh}
+a{color:#667eea;text-decoration:none;cursor:pointer}
+a:hover{text-decoration:underline}
+button{cursor:pointer}
+input[type="checkbox"],input[type="radio"]{cursor:pointer}
+select{cursor:pointer}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.login-container{display:flex;justify-content:center;align-items:center;min-height:100vh}
+.login-box{background:white;padding:40px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:100%;max-width:450px;text-align:center}
+.dashboard-container{display:none}
+.header{background:white;padding:15px 20px;border-radius:15px;margin-bottom:20px;box-shadow:0 5px 20px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.header h1{color:#333;font-size:20px}
+.header .user-info{color:#666;font-size:14px}
+.header .user-info span{margin-left:15px}
+.logout-btn{background:#ff6b6b;color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px}
+.logout-btn:hover{background:#ee5a5a}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-bottom:20px}
+.stat-card{background:white;padding:20px;border-radius:12px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.08)}
+.stat-card h3{color:#667eea;font-size:28px;margin-bottom:5px}
+.stat-card p{color:#666;font-size:13px}
+.nav-tabs{background:white;padding:12px;border-radius:12px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:5px;box-shadow:0 3px 10px rgba(0,0,0,0.08)}
+.nav-tabs button{flex:1;min-width:100px;padding:12px;border:none;background:white;color:#666;border-radius:8px;cursor:pointer;font-size:14px;transition:all 0.2s}
+.nav-tabs button:hover{background:#f5f5f5}
+.nav-tabs button.active{background:#667eea;color:white}
+.content-section{display:none;background:white;padding:20px;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,0.08)}
+.content-section.active{display:block}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;transition:all 0.2s}
+.btn-primary{background:linear-gradient(135deg,#667eea,#764ba2);color:white}
+.btn-primary:hover{opacity:0.9}
+.btn-success{background:#6bcb77;color:white}
+.btn-danger{background:#ff6b6b;color:white}
+.btn-warning{background:#ffd93d;color:#333}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn:hover{opacity:0.9}
+.form-group{margin-bottom:15px;text-align:left}
+.form-group label{display:block;margin-bottom:5px;color:#333;font-weight:500;font-size:14px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+table{width:100%;border-collapse:collapse;margin-top:15px;font-size:14px}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #eee}
+th{background:#f5f5f5;color:#333;font-weight:600}
+tr:hover{background:#fafafa}
+.role-badge{padding:3px 8px;border-radius:4px;font-size:12px;color:white}
+.role-admin{background:#ff6b6b}
+.role-teacher{background:#ffd93d;color:#333}
+.role-student{background:#6bcb77}
+.action-btns{display:flex;gap:5px;flex-wrap:wrap}
+.online-badge{background:#6bcb77;color:white;padding:2px 8px;border-radius:10px;font-size:11px}
+.offline-badge{background:#999;color:white;padding:2px 8px;border-radius:10px;font-size:11px}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal{background:white;padding:30px 25px 25px;border-radius:15px;width:95%;max-width:600px;max-height:90vh;overflow-y:auto;position:relative}
+.modal h2{margin-bottom:20px;color:#333;font-size:18px}
+.modal .close-btn{position:absolute;top:10px;right:15px;background:none;border:none;font-size:28px;cursor:pointer;color:#999;line-height:1;z-index:10}
+.modal .close-btn:hover{color:#333}
+.detail-view{background:#f5f5f5;padding:15px;border-radius:8px;margin:10px 0}
+.detail-view h4{margin-bottom:10px;color:#333}
+.alert{padding:12px;border-radius:8px;margin-bottom:15px;font-size:14px}
+.alert-error{background:#ffe6e6;color:#cc0000}
+.alert-success{background:#e6ffe6;color:#006600}
+.filter-bar{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px}
+.log-entry{padding:10px;border-bottom:1px solid #eee;font-size:13px}
+.log-entry .time{color:#999;font-size:12px}
+.log-entry .action{color:#667eea;font-weight:500}
+.empty-message{text-align:center;color:#999;padding:30px}
+.option-item{display:flex;gap:8px;margin-bottom:6px;align-items:center;width:100%}
+.option-item input[type="radio"],.option-item input[type="checkbox"]{width:auto;flex:none;margin:0;cursor:pointer}
+.option-item label{flex:1;cursor:pointer;word-break:break-word;line-height:1.4}
+.file-upload{border:2px dashed #ddd;padding:20px;text-align:center;border-radius:8px;cursor:pointer;margin:10px 0}
+.file-upload:hover{border-color:#667eea}
+.file-list{list-style:none;padding:0}
+.file-list li{padding:8px;background:#f5f5f5;margin:5px 0;border-radius:5px;display:flex;justify-content:space-between;align-items:center}
+.file-icon{margin-right:8px}
+.whiteboard-container{background:white;border-radius:8px;padding:10px;margin:10px 0}
+.whiteboard-toolbar{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.whiteboard-toolbar button{padding:8px 15px;border:1px solid #ddd;background:white;border-radius:5px;cursor:pointer}
+.whiteboard-toolbar button.active{background:#667eea;color:white;border-color:#667eea}
+.whiteboard-canvas{width:100%;height:400px;border:1px solid #ddd;border-radius:8px;cursor:crosshair}
+.game-item-slot{width:36px;height:36px;background:#f5f5f5;border-radius:8px;display:flex;justify-content:center;align-items:center;font-size:18px;border:1px solid #ddd}
+.game-option-btn{background:#f8f9fa;border:1.5px solid #f1f2f6;padding:12px 15px;border-radius:12px;cursor:pointer;text-align:left;transition:0.2s}
+.game-option-btn:hover{background:#f0edff;border-color:#a29bfe}
+.game-option-btn.selected{background:#f0edff;border-color:#a29bfe}
+.game-option-btn.correct{background:#55efc4 !important;border-color:#55efc4 !important;color:white}
+.game-option-btn.wrong{background:#ff7675 !important;border-color:#ff7675 !important;color:white}
+@media (max-width:768px){.form-row{grid-template-columns:1fr}.header{text-align:center}.header h1{width:100%}}
+</style>
+</head>
+<body>
+<div id="loginContainer" class="login-container">
+<div class="login-box">
+<h1 style="margin-bottom:10px">LMS-Edge</h1>
+<p class="subtitle" style="color:#666;margin-bottom:25px">班级局域网教学管理系统</p>
+<div class="form-group">
+<label>用户名</label>
+<input type="text" id="username" placeholder="admin / teacher / student">
+</div>
+<div class="form-group">
+<label>密码</label>
+<input type="password" id="password" placeholder="输入密码">
+</div>
+<button class="btn btn-primary" style="width:100%;padding:12px;font-size:16px" onclick="doLogin()">登录</button>
+<div style="margin-top:20px;text-align:left;background:#f5f5f5;padding:15px;border-radius:10px">
+<h4 style="margin-bottom:10px;font-size:14px">测试账号</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+<div><span class="role-badge role-admin">管理员</span> admin / admin123</div>
+<div><span class="role-badge role-teacher">老师</span> teacher / teacher123</div>
+<div><span class="role-badge role-student">学生</span> student / student123</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="dashboardContainer" class="dashboard-container">
+<div class="container">
+<div class="header">
+<h1>LMS-Edge 教学管理系统</h1>
+<div class="user-info">
+<span id="welcomeUser">欢迎回来</span>
+<span id="lastActive" style="color:#999;font-size:12px"></span>
+<button class="logout-btn" onclick="doLogout()">退出登录</button>
+</div>
+</div>
+
+<div class="stats-row">
+<div class="stat-card"><h3 id="statStudents">0</h3><p>学生数</p></div>
+<div class="stat-card"><h3 id="statAssignments">0</h3><p>作业总数</p></div>
+<div class="stat-card"><h3 id="statOnline">0</h3><p>在线人数</p></div>
+<div class="stat-card"><h3 id="statSessions">0</h3><p>学习人次</p></div>
+</div>
+
+<div id="adminNav" class="nav-tabs" style="display:none">
+<button class="active" onclick="showSection('users',this)">用户管理</button>
+<button onclick="showSection('assignments',this)">作业管理</button>
+<button onclick="showSection('attendance',this)">考勤记录</button>
+<button onclick="showSection('whiteboard',this)">白板</button>
+<button onclick="showSection('game',this)">🎮 游戏</button>
+<button onclick="showSection('logs',this)">操作日志</button>
+</div>
+
+<div id="teacherNav" class="nav-tabs" style="display:none">
+<button onclick="showSection('attendance',this)">考勤记录</button>
+<button onclick="showSection('assignments',this)">作业管理</button>
+<button onclick="showSection('whiteboard',this)">白板</button>
+<button onclick="showSection('game',this)">🎮 游戏</button>
+</div>
+
+<div id="studentNav" class="nav-tabs" style="display:none">
+<button class="active" onclick="showSection('myAssignments',this)">我的作业</button>
+<button onclick="showSection('mySubmissions',this)">我的作答</button>
+<button onclick="showSection('whiteboard',this)">白板</button>
+<button onclick="showSection('game',this)">🎮 游戏</button>
+</div>
+
+<div id="usersSection" class="content-section active">
+<h3 style="margin-bottom:15px">用户管理</h3>
+<div class="filter-bar">
+<button class="btn btn-primary btn-sm" onclick="showUserModal()">新增用户</button>
+<input type="text" id="userSearch" placeholder="搜索用户名..." onkeyup="loadUsers()">
+<select id="roleFilter" onchange="loadUsers()">
+<option value="">全部角色</option>
+<option value="admin">管理员</option>
+<option value="teacher">老师</option>
+<option value="student">学生</option>
+</select>
+</div>
+<table id="usersTable">
+<thead><tr><th>ID</th><th>用户名</th><th>姓名</th><th>角色</th><th>状态</th><th>最后活跃</th><th>操作</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<div id="assignmentsSection" class="content-section">
+<h3 style="margin-bottom:15px">作业管理</h3>
+<div class="filter-bar">
+<button class="btn btn-primary btn-sm" onclick="showAssignmentModal()">创建作业</button>
+<input type="text" id="assignmentSearch" placeholder="搜索作业..." onkeyup="loadAssignments()">
+</div>
+<table id="assignmentsTable">
+<thead><tr><th>ID</th><th>标题</th><th>类型</th><th>分值</th><th>提交数</th><th>创建者</th><th>创建时间</th><th>操作</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<div id="attendanceSection" class="content-section">
+<h3 style="margin-bottom:15px">考勤记录</h3>
+<div class="filter-bar">
+<button class="btn btn-primary btn-sm" onclick="loadOnlineUsers()">刷新在线状态</button>
+</div>
+<div class="stats-row" style="margin-bottom:20px">
+<div class="stat-card"><h3 id="onlineCount">0</h3><p>当前在线</p></div>
+</div>
+<table id="attendanceTable">
+<thead><tr><th>用户</th><th>角色</th><th>登录时间</th><th>最后活跃</th><th>时长</th><th>状态</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<div id="whiteboardSection" class="content-section">
+<h3 style="margin-bottom:15px">协作白板</h3>
+<div id="whiteboardTeacherControls" style="margin-bottom:10px;display:none">
+<label><input type="checkbox" id="whiteboardAllowDraw" onchange="toggleWhiteboardDraw()"> 允许学生绘画</label>
+<span id="whiteboardOnline" style="margin-left:20px;color:#666;font-size:13px;"></span>
+</div>
+<div class="whiteboard-toolbar">
+<button id="btnPen" class="active" onclick="setTool('pen')">✏️ 画笔</button>
+<button id="btnEraser" onclick="setTool('eraser')">🧹 橡皮</button>
+<button id="btnLine" onclick="setTool('line')">📏 直线</button>
+<button id="btnRect" onclick="setTool('rect')">⬜ 矩形</button>
+<button id="btnCircle" onclick="setTool('circle')">⭕ 圆形</button>
+<input type="color" id="colorPicker" value="#000000" style="width:40px;height:35px;cursor:pointer;border:none;border-radius:5px;">
+<button onclick="setLineWidth(2)">细</button>
+<button onclick="setLineWidth(5)">中</button>
+<button onclick="setLineWidth(10)">粗</button>
+<button onclick="clearWhiteboard()" style="margin-left:auto;">🗑️ 清空</button>
+</div>
+<div style="position:relative;background:white;border-radius:8px;overflow:hidden;">
+<canvas id="whiteboardCanvas" style="width:100%;height:500px;display:block;"></canvas>
+<div id="whiteboardOverlay" style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;display:none;justify-content:center;align-items:center;background:rgba(0,0,0,0.3);color:white;font-size:18px;font-weight:bold;">等待老师开启...</div>
+</div>
+<div id="whiteboardStatus" style="margin-top:10px;color:#666;font-size:13px;display:flex;justify-content:space-between;">
+<span>🖱️ 左键绘画 | 🖱️ 右键拖动</span>
+<span id="syncStatus"></span>
+</div>
+</div>
+
+<div id="gameSection" class="content-section">
+<h3 style="margin-bottom:15px">🎮 喜刷刷对战</h3>
+
+<!-- 教师区域 -->
+<div id="teacherGameArea" style="display:none">
+<h4 style="margin-bottom:10px">👨‍🏫 学生游戏状态</h4>
+<div id="studentGameStatus" style="background:#f5f5f5;padding:15px;border-radius:8px">
+<p style="color:#999;text-align:center">加载中...</p>
+</div>
+</div>
+
+<!-- 学生区域 -->
+<div id="studentGameArea">
+
+<!-- 游戏大厅：匹配前显示 -->
+<div id="gameLobbyArea">
+<!-- 玩家信息 -->
+<div id="gameInfo" style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:15px">
+<div style="display:flex;justify-content:space-between;margin-bottom:10px">
+<span>💰 金币: <strong id="playerGold">0</strong></span>
+<span>🎖️ 勋章: <strong id="playerMedals">0</strong></span>
+<span>👤 胜场: <strong id="playerWins">0</strong></span>
+</div>
+<div>
+<strong>我的背包：</strong>
+<div id="gameInventory" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+</div>
+</div>
+
+<!-- 商店 -->
+<div id="gameShop" style="background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:15px">
+<h4 style="margin-bottom:10px">🏪 道具商店</h4>
+<div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap">
+<div style="text-align:center;padding:10px;background:white;border-radius:8px;cursor:pointer" onclick="buyGameItem('heal')">
+<div style="font-size:30px">🍎</div>
+<div style="font-size:12px">苹果</div>
+<div style="color:#e74c3c;font-weight:bold">5金币</div>
+<div style="font-size:11px;color:#666">恢复40血</div>
+</div>
+<div style="text-align:center;padding:10px;background:white;border-radius:8px;cursor:pointer" onclick="buyGameItem('shield')">
+<div style="font-size:30px">🛡️</div>
+<div style="font-size:12px">护盾</div>
+<div style="color:#e74c3c;font-weight:bold">8金币</div>
+<div style="font-size:11px;color:#666">抵挡一次伤害</div>
+</div>
+<div style="text-align:center;padding:10px;background:white;border-radius:8px;cursor:pointer" onclick="buyGameItem('dmg')">
+<div style="font-size:30px">⚡</div>
+<div style="font-size:12px">狂暴</div>
+<div style="color:#e74c3c;font-weight:bold">10金币</div>
+<div style="font-size:11px;color:#666">下次伤害翻倍</div>
+</div>
+</div>
+</div>
+
+<!-- 排行榜 -->
+<h3 style="margin-bottom:15px">🏆 排行榜</h3>
+<div id="gameLeaderboard" style="background:white;padding:15px;border-radius:8px;margin-bottom:15px">
+<table style="width:100%;font-size:13px">
+<thead><tr><th>排名</th><th>玩家</th><th>勋章</th><th>胜场</th></tr></thead>
+<tbody id="leaderboardBody"></tbody>
+</table>
+</div>
+
+<!-- 匹配按钮 -->
+<div id="gameMatchArea" style="text-align:center;padding:30px;background:#f8f9fa;border-radius:8px">
+<div id="matchStatus" style="margin-bottom:20px;color:#666;font-size:14px">点击开始匹配</div>
+<button id="matchBtn" class="btn btn-primary" onclick="startMatch()" style="padding:15px 40px;font-size:16px">🎮 开始匹配</button>
+</div>
+</div>
+
+<!-- 游戏对战区域：匹配后显示 -->
+<div id="gamePlayArea" style="display:none">
+<!-- 对战舞台 -->
+<div id="gameBattleStage" style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:15px">
+<div style="display:flex;justify-content:space-around;align-items:center">
+<!-- 左侧：玩家自己 -->
+<div id="gameHeroNode" style="text-align:center">
+<div id="heroGameAvatar" style="font-size:50px">🧙‍♀️</div>
+<div style="margin-top:5px;font-weight:bold">我</div>
+<div style="width:60px;height:6px;background:#eee;border-radius:3px;overflow:hidden;margin:5px auto">
+<div id="heroGameHp" style="width:100%;height:100%;background:#55efc4;transition:width 0.3s"></div>
+</div>
+<div id="heroGameBuffs" style="font-size:16px"></div>
+</div>
+<div style="font-size:24px;color:#999">VS</div>
+<!-- 右侧：对手 -->
+<div id="gameEnemyNode" style="text-align:center">
+<div id="enemyGameAvatar" style="font-size:50px">👾</div>
+<div id="enemyGameName" style="margin-top:5px;font-weight:bold">对手</div>
+<div style="width:60px;height:6px;background:#eee;border-radius:3px;overflow:hidden;margin:5px auto">
+<div id="enemyGameHp" style="width:100%;height:100%;background:#ff7675;transition:width 0.3s"></div>
+</div>
+</div>
+</div>
+<div id="gameMessage" style="text-align:center;margin:10px 0;font-size:13px;color:#667eea;font-weight:bold"></div>
+</div>
+
+<!-- 答题区域 -->
+<div id="gameQuizArea" style="background:white;padding:20px;border-radius:8px;border:1px solid #eee">
+<div id="gameQType" style="display:inline-block;padding:2px 8px;background:#dfe6e9;border-radius:4px;font-size:11px;margin-bottom:8px">题型</div>
+<div id="gameQText" style="font-size:16px;font-weight:bold;color:#333;margin-bottom:15px;line-height:1.4">题目加载中...</div>
+<div id="gameOptions" style="display:grid;grid-gap:10px"></div>
+<div id="gameActionBtns" style="margin-top:15px;text-align:center;display:none">
+<button id="gameSubmitBtn" class="btn btn-primary" onclick="submitGameAnswer()">确认提交</button>
+<button id="gameContinueBtn" class="btn" style="background:#55efc4;color:white;display:none" onclick="nextGameQuestion()">确定</button>
+</div>
+</div>
+
+<button class="btn btn-danger" onclick="quitGame()" style="margin-top:15px;width:100%">认输退出</button>
+</div>
+
+</div>
+
+<!-- 游戏结果弹窗 -->
+<div id="gameResultModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:2000;justify-content:center;align-items:center">
+<div style="background:white;padding:30px;border-radius:15px;text-align:center;max-width:350px">
+<div id="resultEmoji" style="font-size:60px;margin-bottom:15px"></div>
+<h2 id="resultTitle" style="margin-bottom:10px"></h2>
+<p id="resultDesc" style="color:#666;margin-bottom:20px"></p>
+<div id="resultRewards" style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px"></div>
+<button class="btn btn-primary" onclick="closeGameResult()">返回游戏大厅</button>
+</div>
+</div>
+
+</div>
+
+<div id="logsSection" class="content-section">
+<h3 style="margin-bottom:15px">操作日志</h3>
+<div id="logsList"></div>
+</div>
+
+<div id="myAssignmentsSection" class="content-section active">
+<div class="stats-row">
+<div class="stat-card"><h3 id="statTotalScore">0</h3><p>总积分</p></div>
+<div class="stat-card"><h3 id="statAvgScore">0</h3><p>平均分</p></div>
+<div class="stat-card"><h3 id="statCompleted">0</h3><p>已完成</p></div>
+</div>
+<h3 style="margin-bottom:15px">可用作业</h3>
+<table id="myAssignmentsTable">
+<thead><tr><th>ID</th><th>标题</th><th>类型</th><th>分值</th><th>附件</th><th>操作</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<div id="mySubmissionsSection" class="content-section">
+<h3 style="margin-bottom:15px">我的作答</h3>
+<table id="mySubmissionsTable">
+<thead><tr><th>作业</th><th>我的答案</th><th>得分</th><th>评语</th><th>附件</th><th>提交时间</th><th>操作</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div id="userModal" class="modal-overlay">
+<div class="modal">
+<span class="close-btn" onclick="closeModal('userModal')">&times;</span>
+<h2 id="userModalTitle">新增用户</h2>
+<div class="form-group">
+<label>用户名 *</label>
+<input type="text" id="editUsername" placeholder="输入用户名">
+</div>
+<div class="form-group">
+<label>姓名</label>
+<input type="text" id="editFullName" placeholder="输入姓名">
+</div>
+<div class="form-group">
+<label>角色 *</label>
+<select id="editRole">
+<option value="student">学生</option>
+<option value="teacher">老师</option>
+<option value="admin">管理员</option>
+</select>
+</div>
+<div class="form-group" id="passwordGroup">
+<label id="passwordLabel">初始密码 *</label>
+<input type="password" id="editPassword" placeholder="输入密码">
+</div>
+<input type="hidden" id="editUserId">
+<button class="btn btn-primary" style="width:100%" onclick="saveUser()">保存</button>
+</div>
+</div>
+
+<div id="assignmentModal" class="modal-overlay">
+<div class="modal">
+<span class="close-btn" onclick="closeModal('assignmentModal')">&times;</span>
+<h2 id="assignmentModalTitle">创建作业</h2>
+<div class="form-group">
+<label>作业标题 *</label>
+<input type="text" id="assignTitle" placeholder="输入作业标题">
+</div>
+<div class="form-group">
+<label>作业内容</label>
+<textarea id="assignContent" placeholder="输入作业详细内容..."></textarea>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>作业类型</label>
+<select id="assignType" onchange="toggleAssignmentFields()">
+<option value="single_choice">单选题</option>
+<option value="multiple_choice">多选题</option>
+<option value="programming">机试题</option>
+</select>
+</div>
+<div class="form-group">
+<label>分值</label>
+<input type="number" id="assignPoints" value="10" min="1">
+</div>
+</div>
+<div id="choiceFields">
+<div class="form-group">
+<label>选项</label>
+<div id="optionsList"></div>
+<button class="btn btn-sm" onclick="addOption()" style="margin-top:5px">+ 添加选项</button>
+</div>
+<div class="form-group">
+<label>正确答案</label>
+<input type="text" id="assignAnswer" placeholder="输入正确答案">
+</div>
+</div>
+<div id="programmingFields" style="display:none">
+<div class="form-group">
+<label>上传附件</label>
+<div class="file-upload" onclick="document.getElementById('assignmentFile').click()">
+<p>点击上传附件</p>
+<p style="font-size:12px;color:#999">支持: xlsx, xls, doc, docx, zip, rar, jpg, png</p>
+<input type="file" id="assignmentFile" style="display:none" onchange="handleAssignmentFile(this)">
+</div>
+<ul id="attachmentList" class="file-list"></ul>
+</div>
+</div>
+<input type="hidden" id="editAssignmentId">
+<button class="btn btn-primary" style="width:100%" onclick="saveAssignment()">保存</button>
+</div>
+</div>
+
+<div id="detailModal" class="modal-overlay">
+<div class="modal" style="max-width:700px">
+<span class="close-btn" onclick="closeModal('detailModal')">&times;</span>
+<h2 id="detailModalTitle">作业详情</h2>
+<div id="detailContent"></div>
+</div>
+</div>
+
+<div id="submitModal" class="modal-overlay">
+<div class="modal">
+<span class="close-btn" onclick="closeModal('submitModal')">&times;</span>
+<h2 id="submitModalTitle">提交作业</h2>
+<div id="submitAssignmentInfo" class="detail-view"></div>
+<div id="submitChoiceFields">
+<div class="form-group">
+<label>我的答案</label>
+<div id="submitOptionsList"></div>
+</div>
+</div>
+<div id="submitProgrammingFields" style="display:none">
+<div class="form-group">
+<label>上传作答文件</label>
+<div class="file-upload" onclick="document.getElementById('submissionFile').click()">
+<p>点击上传文件</p>
+<p style="font-size:12px;color:#999">支持: zip, rar, jpg, png, pdf, doc, docx</p>
+<input type="file" id="submissionFile" style="display:none" onchange="handleSubmissionFile(this)">
+</div>
+<ul id="submissionFileList" class="file-list"></ul>
+</div>
+</div>
+<input type="hidden" id="submitAssignmentId">
+<input type="hidden" id="currentSubmissionId">
+<button class="btn btn-primary" style="width:100%" onclick="submitAssignment()">提交</button>
+</div>
+</div>
+
+<div id="gradeModal" class="modal-overlay">
+<div class="modal">
+<span class="close-btn" onclick="closeModal('gradeModal')">&times;</span>
+<h2>批改作业</h2>
+<div class="form-group">
+<label>学生</label>
+<p id="gradeStudentName" style="margin:5px 0"></p>
+</div>
+<div class="form-group">
+<label>作答内容</label>
+<p id="gradeAnswer" style="margin:5px 0;color:#666"></p>
+</div>
+<div class="form-group">
+<label>附件</label>
+<p id="gradeAttachment" style="margin:5px 0"></p>
+</div>
+<div class="form-group">
+<label>得分 <span id="gradeMaxPoints" style="color:#999;font-weight:normal"></span></label>
+<input type="number" id="gradeScore" min="0" max="100" value="0">
+</div>
+<div class="form-group">
+<label>评语</label>
+<textarea id="gradeFeedback" rows="3" placeholder="输入评语"></textarea>
+</div>
+<input type="hidden" id="gradeSubmissionId">
+<button class="btn btn-primary" style="width:100%" onclick="gradeSubmission()">保存评分</button>
+</div>
+</div>
+
+<div id="passwordModal" class="modal-overlay">
+<div class="modal">
+<span class="close-btn" onclick="closeModal('passwordModal')">&times;</span>
+<h2>修改密码</h2>
+<div class="form-group">
+<label>原密码</label>
+<input type="password" id="oldPassword" placeholder="输入原密码">
+</div>
+<div class="form-group">
+<label>新密码</label>
+<input type="password" id="newPassword" placeholder="输入新密码">
+</div>
+<div class="form-group">
+<label>确认新密码</label>
+<input type="password" id="confirmPassword" placeholder="再次输入新密码">
+</div>
+<button class="btn btn-primary" style="width:100%" onclick="changePassword()">确认修改</button>
+</div>
+</div>
+
+<script>
+var API_URL = window.location.origin;
+var currentUser = null;
+var SESSION_TIMEOUT = 24 * 60 * 60 * 1000;
+var sessionTimer = null;
+var currentAssignmentFile = null;
+var currentSubmissionFile = null;
+var sessionEventHandler = null;
+
+function getSession() {
+    var session = localStorage.getItem('lms_session');
+    if (session) {
+        try {
+            var data = JSON.parse(session);
+            if (data && data.user && data.loginTime) {
+                var now = Date.now();
+                if (now - data.loginTime < SESSION_TIMEOUT) {
+                    return data;
+                }
+            }
+            localStorage.removeItem('lms_session');
+        } catch (e) {
+            localStorage.removeItem('lms_session');
+        }
+    }
+    return null;
+}
+
+function saveSession(user, token) {
+    var session = {user: user, token: token, loginTime: Date.now()};
+    localStorage.setItem('lms_session', JSON.stringify(session));
+    setupSessionTimer();
+}
+
+function setupSessionTimer() {
+    if (sessionTimer) {
+        clearTimeout(sessionTimer);
+    }
+    sessionTimer = setTimeout(function() {
+        forceLogout();
+    }, SESSION_TIMEOUT);
+}
+
+function forceLogout() {
+    localStorage.removeItem('lms_session');
+    currentUser = null;
+    document.getElementById('loginContainer').style.display = 'flex';
+    document.getElementById('dashboardContainer').style.display = 'none';
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+    removeSessionListeners();
+    alert('登录已超时，请重新登录');
+}
+
+function addSessionListeners() {
+    removeSessionListeners();
+    sessionEventHandler = function() {
+        setupSessionTimer();
+    };
+    document.addEventListener('click', sessionEventHandler);
+    document.addEventListener('keypress', sessionEventHandler);
+}
+
+function removeSessionListeners() {
+    if (sessionEventHandler) {
+        document.removeEventListener('click', sessionEventHandler);
+        document.removeEventListener('keypress', sessionEventHandler);
+        sessionEventHandler = null;
+    }
+}
+
+function initSession() {
+    var session = getSession();
+    if (session && session.user) {
+        currentUser = session.user;
+        showDashboard();
+        setupSessionTimer();
+        addSessionListeners();
+    }
+}
+
+async function doLogin() {
+    var username = document.getElementById('username').value;
+    var password = document.getElementById('password').value;
+    if (!username || !password) {alert('请输入用户名和密码');return;}
+    try {
+        var res = await fetch(API_URL + '/api/auth/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username: username, password: password})
+        });
+        var data = await res.json();
+        if (data.token) {
+            currentUser = data.user;
+            saveSession(data.user, data.token);
+            showDashboard();
+        } else {
+            alert(data.error || '登录失败');
+        }
+    } catch (e) {
+        alert('连接失败: ' + e.message);
+    }
+}
+
+function doLogout() {
+    localStorage.removeItem('lms_session');
+    currentUser = null;
+    document.getElementById('loginContainer').style.display = 'flex';
+    document.getElementById('dashboardContainer').style.display = 'none';
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+    if (sessionTimer) {
+        clearTimeout(sessionTimer);
+        sessionTimer = null;
+    }
+    removeSessionListeners();
+}
+
+function showDashboard() {
+    document.getElementById('loginContainer').style.display = 'none';
+    document.getElementById('dashboardContainer').style.display = 'block';
+    document.getElementById('welcomeUser').textContent = '欢迎, ' + (currentUser.full_name || currentUser.username) + ' (' + getRoleName(currentUser.role) + ')';
+    document.getElementById('adminNav').style.display = currentUser.role === 'admin' ? 'flex' : 'none';
+    document.getElementById('teacherNav').style.display = currentUser.role === 'teacher' ? 'flex' : 'none';
+    document.getElementById('studentNav').style.display = currentUser.role === 'student' ? 'flex' : 'none';
+    loadAllStats();
+    var firstSection = currentUser.role === 'student' ? 'myAssignments' : (currentUser.role === 'teacher' ? 'attendance' : 'users');
+    showSection(firstSection, null);
+    if (currentUser.role === 'student') autoSignin();
+}
+
+function getRoleName(role) {
+    var names = {admin: '管理员', teacher: '老师', student: '学生'};
+    return names[role] || role;
+}
+
+function showSection(section, btn) {
+    document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-tabs button').forEach(el => el.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    var sectionMap = {
+        'users': 'usersSection', 'assignments': 'assignmentsSection', 'attendance': 'attendanceSection',
+        'whiteboard': 'whiteboardSection', 'logs': 'logsSection', 'game': 'gameSection',
+        'myAssignments': 'myAssignmentsSection', 'mySubmissions': 'mySubmissionsSection'
+    };
+    var el = document.getElementById(sectionMap[section]);
+    if (el) el.classList.add('active');
+    if (section === 'users') loadUsers();
+    if (section === 'assignments') loadAssignments();
+    if (section === 'attendance') { loadAttendanceRecords(); loadOnlineUsers(); }
+    if (section === 'stats') loadClassStats();
+    if (section === 'logs') loadLogs();
+    if (section === 'whiteboard') initWhiteboard();
+    if (section === 'game') initGame();
+    if (section !== 'game') {
+        if (gamePollTimer) clearTimeout(gamePollTimer);
+        if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
+        gameState.inGame = false;
+        gameState.inMatching = false;
+    }
+    if (section === 'myAssignments') { loadMyAssignments(); loadMyStats(); }
+    if (section === 'mySubmissions') loadMySubmissions();
+}
+
+async function loadAllStats() {
+    try {
+        var res = await fetch(API_URL + '/api/info?role=' + currentUser.role);
+        var data = await res.json();
+        document.getElementById('statStudents').textContent = data.students || 0;
+        document.getElementById('statAssignments').textContent = data.assignments || 0;
+        document.getElementById('statSessions').textContent = data.students || 0;
+    } catch (e) {console.error(e);}
+}
+
+async function loadMyStats() {
+    if (!currentUser || currentUser.role !== 'student') return;
+    try {
+        var res = await fetch(API_URL + '/api/stats/my?user_id=' + currentUser.id);
+        var data = await res.json();
+        document.getElementById('statTotalScore').textContent = data.total_score || 0;
+        document.getElementById('statAvgScore').textContent = data.avg_score || 0;
+        document.getElementById('statCompleted').textContent = data.total_assignments || 0;
+    } catch (e) {console.error(e);}
+}
+
+async function loadUsers() {
+    try {
+        var res = await fetch(API_URL + '/api/users');
+        var data = await res.json();
+        var tbody = document.querySelector('#usersTable tbody');
+        var html = '';
+        var search = document.getElementById('userSearch').value.toLowerCase();
+        var roleFilter = document.getElementById('roleFilter').value;
+        for (var u of (data.users || [])) {
+            if (search && !u.username.toLowerCase().includes(search) && !(u.full_name || '').toLowerCase().includes(search)) continue;
+            if (roleFilter && u.role !== roleFilter) continue;
+            var isOnline = u.last_active && new Date(u.last_active) > new Date(Date.now() - 5*60*1000);
+            var lastActive = u.last_active ? new Date(u.last_active).toLocaleString() : '-';
+            html += '<tr><td>' + u.id + '</td><td>' + u.username + '</td><td>' + (u.full_name || '-') + '</td><td><span class="role-badge role-' + u.role + '">' + getRoleName(u.role) + '</span></td><td><span class="' + (isOnline ? 'online-badge' : 'offline-badge') + '">' + (isOnline ? '在线' : '离线') + '</span></td><td>' + lastActive + '</td><td class="action-btns">';
+            if (currentUser.role === 'admin') {
+                html += '<button class="btn btn-primary btn-sm" onclick="editUser(' + u.id + ',\'' + u.username + '\',\'' + (u.full_name || '') + '\',\'' + u.role + '\')">编辑</button>';
+                if (u.id !== 1) {
+                    html += '<button class="btn btn-danger btn-sm" onclick="deleteUser(' + u.id + ',\'' + u.username + '\')">删除</button>';
+                }
+            }
+            html += '</td></tr>';
+        }
+        tbody.innerHTML = html || '<tr><td colspan="7" class="empty-message">暂无用户</td></tr>';
+    } catch (e) {console.error(e);}
+}
+
+function showUserModal(id, username, fullName, role) {
+    document.getElementById('userModalTitle').textContent = id ? '编辑用户' : '新增用户';
+    document.getElementById('editUserId').value = id || '';
+    document.getElementById('editUsername').value = username || '';
+    document.getElementById('editFullName').value = fullName || '';
+    document.getElementById('editRole').value = role || 'student';
+    document.getElementById('editPassword').value = '';
+    document.getElementById('passwordLabel').textContent = id ? '新密码 (留空不修改)' : '初始密码 *';
+    document.getElementById('userModal').classList.add('active');
+}
+
+function editUser(id, username, fullName, role) {
+    if (role === 'admin' && id !== 1 && currentUser.role !== 'admin') {
+        alert('不能编辑管理员账户');return;
+    }
+    showUserModal(id, username, fullName, role);
+}
+
+async function saveUser() {
+    var id = document.getElementById('editUserId').value;
+    var username = document.getElementById('editUsername').value;
+    var fullName = document.getElementById('editFullName').value;
+    var role = document.getElementById('editRole').value;
+    var password = document.getElementById('editPassword').value;
+    
+    if (!username) {alert('用户名不能为空');return;}
+    if (!id && !password) {alert('初始密码不能为空');return;}
+    
+    var data = {username: username, full_name: fullName, role: role};
+    if (password) data.password = password;
+    if (id) data.id = parseInt(id);
+    
+    try {
+        var url = id ? API_URL + '/api/users/' : API_URL + '/api/users/create';
+        var method = id ? 'PUT' : 'POST';
+        var res = await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        var result = await res.json();
+        if (res.ok && (result.success || result.id)) {
+            closeModal('userModal');
+            loadUsers();
+        } else {
+            alert(result.error || '操作失败');
+        }
+    } catch (e) {alert('操作失败: ' + e.message);}
+}
+
+async function deleteUser(id, username) {
+    if (id === 1) {alert('不能删除管理员账户');return;}
+    if (!confirm('确定删除用户 "' + username + '"？')) return;
+    try {
+        var res = await fetch(API_URL + '/api/users/' + id, {method: 'DELETE'});
+        var data = await res.json();
+        if (data.success) {loadUsers();} else {alert(data.error || '删除失败');}
+    } catch (e) {alert('删除失败: ' + e.message);}
+}
+
+async function loadAssignments() {
+    try {
+        var res = await fetch(API_URL + '/api/assignments/all');
+        var data = await res.json();
+        var tbody = document.querySelector('#assignmentsTable tbody');
+        var html = '';
+        var search = document.getElementById('assignmentSearch').value.toLowerCase();
+        if (data.assignments && data.assignments.length > 0) {
+            for (var a of data.assignments) {
+                if (search && !a.title.toLowerCase().includes(search)) continue;
+                var typeName = a.assignment_type === 'single_choice' ? '单选' : (a.assignment_type === 'multiple_choice' ? '多选' : '机试');
+                html += '<tr><td>' + a.id + '</td><td><a href="javascript:void(0)" onclick="viewAssignmentDetail(' + a.id + ',\'' + a.title + '\')">' + a.title + '</a></td><td>' + typeName + '</td><td>' + a.points + '</td><td>' + (a.submission_count || 0) + '</td><td>' + (a.creator_name || '未知') + '</td><td>' + new Date(a.created_at).toLocaleString() + '</td><td class="action-btns">';
+                if (currentUser.role === 'admin' || currentUser.role === 'teacher') {
+                    html += '<button class="btn btn-primary btn-sm" onclick="editAssignment(' + a.id + ',\'' + a.title + '\',\'' + (a.content || '').replace(/'/g, "\\'") + '\',\'' + a.assignment_type + '\',' + a.points + ',\'' + (a.correct_answer || '') + '\')">编辑</button>';
+                    html += '<button class="btn btn-danger btn-sm" onclick="deleteAssignment(' + a.id + ',\'' + a.title + '\')">删除</button>';
+                }
+                html += '</td></tr>';
+            }
+        } else {
+            html = '<tr><td colspan="8" class="empty-message">暂无作业</td></tr>';
+        }
+        tbody.innerHTML = html;
+    } catch (e) {console.error(e);}
+}
+
+function showAssignmentModal(id, title, content, type, points, answer) {
+    document.getElementById('assignmentModalTitle').textContent = id ? '编辑作业' : '创建作业';
+    document.getElementById('editAssignmentId').value = id || '';
+    document.getElementById('assignTitle').value = title || '';
+    document.getElementById('assignContent').value = content || '';
+    document.getElementById('assignType').value = type || 'single_choice';
+    document.getElementById('assignPoints').value = points || 10;
+    document.getElementById('assignAnswer').value = answer || '';
+    document.getElementById('attachmentList').innerHTML = '';
+    document.getElementById('assignmentFile').value = '';
+    currentAssignmentFile = null;
+    toggleAssignmentFields();
+    document.getElementById('assignmentModal').classList.add('active');
+}
+
+function editAssignment(id, title, content, type, points, answer) {
+    showAssignmentModal(id, title, content, type, points, answer);
+}
+
+function toggleAssignmentFields() {
+    var type = document.getElementById('assignType').value;
+    document.getElementById('choiceFields').style.display = (type === 'single_choice' || type === 'multiple_choice') ? 'block' : 'none';
+    document.getElementById('programmingFields').style.display = type === 'programming' ? 'block' : 'none';
+    if (type === 'single_choice') {
+        document.getElementById('assignAnswer').placeholder = '输入正确选项序号，如 A';
+    } else if (type === 'multiple_choice') {
+        document.getElementById('assignAnswer').placeholder = '输入正确选项，如 AB';
+    } else {
+        document.getElementById('assignAnswer').placeholder = '';
+    }
+}
+
+function addOption() {
+    var list = document.getElementById('optionsList');
+    var idx = list.children.length;
+    var div = document.createElement('div');
+    div.className = 'option-item';
+    div.innerHTML = '<span style="width:30px">' + String.fromCharCode(65 + idx) + '</span><input type="text" placeholder="选项内容"><button onclick="this.parentElement.remove()">删除</button>';
+    list.appendChild(div);
+}
+
+function handleAssignmentFile(input) {
+    if (input.files[0]) {
+        currentAssignmentFile = input.files[0];
+        var list = document.getElementById('attachmentList');
+        list.innerHTML = '<li><span class="file-icon">📎</span>' + currentAssignmentFile.name + '</li>';
+    }
+}
+
+async function saveAssignment() {
+    var id = document.getElementById('editAssignmentId').value;
+    var title = document.getElementById('assignTitle').value;
+    var content = document.getElementById('assignContent').value;
+    var type = document.getElementById('assignType').value;
+    var points = parseInt(document.getElementById('assignPoints').value) || 10;
+    var answer = document.getElementById('assignAnswer').value;
+    
+    if (!title) {alert('作业标题不能为空');return;}
+    
+    var data = {title: title, content: content, assignment_type: type, points: points};
+    
+    if (type === 'single_choice' || type === 'multiple_choice') {
+        var options = [];
+        document.querySelectorAll('#optionsList input').forEach(function(input) {
+            if (input.value) options.push(input.value);
+        });
+        data.options = options;
+        data.correct_answer = answer;
+    }
+    
+    try {
+        var url = id ? API_URL + '/api/assignments/' + id : API_URL + '/api/assignments/create';
+        var method = id ? 'PUT' : 'POST';
+        if (!id) data.created_by = currentUser.id;
+        
+        var res = await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        var result = await res.json();
+        
+        if (result.success || result.id) {
+            var assignmentId = result.id || id;
+            if (currentAssignmentFile) {
+                try {
+                    var formData = new FormData();
+                    formData.append('file', currentAssignmentFile);
+                    var uploadRes = await fetch(API_URL + '/api/attachments/' + assignmentId, {method: 'POST', body: formData});
+                    var uploadResult = await uploadRes.json();
+                    if (!uploadResult.success) {
+                        alert('附件上传失败: ' + (uploadResult.error || '未知错误'));
+                        return;
+                    }
+                } catch (e) {
+                    alert('附件上传失败: ' + e.message);
+                    return;
+                }
+            }
+            closeModal('assignmentModal');
+            loadAssignments();
+        } else {
+            alert(result.error || '操作失败');
+        }
+    } catch (e) {alert('操作失败: ' + e.message);}
+}
+
+async function deleteAssignment(id, title) {
+    if (!confirm('确定删除作业 "' + title + '"？')) return;
+    try {
+        var res = await fetch(API_URL + '/api/assignments/' + id, {method: 'DELETE'});
+        var data = await res.json();
+        if (data.success) {loadAssignments();} else {alert(data.error || '删除失败');}
+    } catch (e) {alert('删除失败: ' + e.message);}
+}
+
+async function viewAssignmentDetail(id, title) {
+    try {
+        var res = await fetch(API_URL + '/api/assignments/' + id);
+        var data = await res.json();
+        var assignmentType = data.assignment.assignment_type;
+        var isAutoGrade = assignmentType === 'single_choice' || assignmentType === 'multiple_choice';
+        var html = '<div class="detail-view"><h4>' + data.assignment.title + '</h4><p><strong>内容:</strong> ' + (data.assignment.content || '无') + '</p><p><strong>类型:</strong> ' + (assignmentType === 'single_choice' ? '单选' : (assignmentType === 'multiple_choice' ? '多选' : '机试')) + (isAutoGrade ? ' (自动批改)' : '') + '</p><p><strong>分值:</strong> ' + data.assignment.points + '</p></div>';
+        if (data.assignment.attachment) {
+            html += '<div class="form-group"><label>附件:</label><a href="' + API_URL + '/api/attachments/' + data.assignment.id + '/' + data.assignment.attachment + '" target="_blank" class="btn btn-sm btn-primary">下载附件</a></div>';
+        }
+        html += '<h4 style="margin-top:15px">学生作答 (' + (data.assignment.submissions || []).length + ')</h4>';
+        if (data.assignment.submissions && data.assignment.submissions.length > 0) {
+            html += '<table style="font-size:13px"><thead><tr><th>学生</th><th>答案</th><th>得分</th><th>评语</th><th>附件</th><th>提交时间</th><th>批改</th></tr></thead><tbody>';
+            for (var s of data.assignment.submissions) {
+                var attachmentLink = s.attachment ? '<a href="' + API_URL + '/api/submissions/file/' + s.id + '/' + s.attachment + '" target="_blank">下载</a>' : '-';
+                var isGraded = isAutoGrade || (s.score !== undefined && s.score >= 0) || s.feedback;
+                var scoreDisplay = isGraded ? s.score + '分' : '待批改';
+                var feedbackDisplay = s.feedback || (isAutoGrade ? (s.is_correct ? '正确' : '错误') : '-');
+                var feedbackEscaped = (s.feedback || '').replace(/'/g, "\\'");
+                var gradeBtnText = isGraded ? '重新批改' : '批改';
+                var gradeBtn = '<button class="btn btn-sm btn-primary" onclick="showGradeModal(' + s.id + ',\'' + (s.full_name || s.username) + '\',' + (s.score || 0) + ',\'' + feedbackEscaped + '\')">' + gradeBtnText + '</button>';
+                html += '<tr><td>' + (s.full_name || s.username) + '</td><td>' + (s.student_answer || '-') + '</td><td>' + scoreDisplay + '</td><td>' + feedbackDisplay + '</td><td>' + attachmentLink + '</td><td>' + new Date(s.submitted_at).toLocaleString() + '</td><td>' + gradeBtn + '</td></tr>';
+            }
+            html += '</tbody></table>';
+        } else {
+            html += '<p class="empty-message">暂无作答</p>';
+        }
+        document.getElementById('detailModalTitle').textContent = '作业详情 - ' + title;
+        document.getElementById('detailContent').innerHTML = html;
+        document.getElementById('detailModal').dataset.assignmentId = id;
+        document.getElementById('detailModal').classList.add('active');
+    } catch (e) {alert('获取详情失败: ' + e.message);}
+}
+
+async function loadMyAssignments() {
+    try {
+        var res = await fetch(API_URL + '/api/assignments?user_id=' + currentUser.id);
+        var data = await res.json();
+        var tbody = document.querySelector('#myAssignmentsTable tbody');
+        var html = '';
+        if (data.assignments && data.assignments.length > 0) {
+            for (var a of data.assignments) {
+                var typeName = a.assignment_type === 'single_choice' ? '单选' : (a.assignment_type === 'multiple_choice' ? '多选' : '机试');
+                var attachmentLink = a.attachment ? '<a href="' + API_URL + '/api/attachments/' + a.id + '/' + a.attachment + '" target="_blank">📎下载</a>' : '-';
+                var mySub = a.my_submission;
+                var isGraded = mySub && ((mySub.score !== undefined && mySub.score > 0) || mySub.feedback);
+                var btnHtml = '';
+                if (mySub) {
+                    var btnClass = isGraded ? 'btn-secondary' : 'btn-info';
+                    var btnText = isGraded ? '已批改' : '已作答';
+                    btnHtml = '<span class="' + btnClass + ' btn-sm" style="padding:4px 8px;font-size:12px;display:inline-block;cursor:not-allowed;" title="作答后不可修改">' + btnText + '</span>';
+                } else {
+                    btnHtml = '<button class="btn btn-success btn-sm" onclick="showSubmitModal(' + a.id + ',\'' + a.title + '\')">作答</button>';
+                }
+                html += '<tr><td>' + a.id + '</td><td>' + a.title + '</td><td>' + typeName + '</td><td>' + a.points + '</td><td>' + attachmentLink + '</td><td>' + btnHtml + '</td></tr>';
+            }
+        } else {
+            html = '<tr><td colspan="6" class="empty-message">暂无作业</td></tr>';
+        }
+        tbody.innerHTML = html;
+    } catch (e) {console.error(e);}
+}
+
+async function showSubmitModal(id, title) {
+    try {
+        var res = await fetch(API_URL + '/api/assignments/' + id);
+        var data = await res.json();
+        var a = data.assignment;
+        var existingSubmission = data.assignment.submissions && data.assignment.submissions[0];
+        var isGraded = existingSubmission && ((existingSubmission.score !== undefined && existingSubmission.score > 0) || existingSubmission.feedback);
+        
+        document.getElementById('submitAssignmentId').value = id;
+        document.getElementById('currentSubmissionId').value = existingSubmission ? existingSubmission.id : '';
+        document.getElementById('submitModalTitle').textContent = '提交 - ' + title;
+        document.getElementById('submissionFileList').innerHTML = '';
+        document.getElementById('submissionFile').value = '';
+        currentSubmissionFile = null;
+        
+        var typeName = a.assignment_type === 'single_choice' ? '单选' : (a.assignment_type === 'multiple_choice' ? '多选' : '机试');
+        var attachmentInfo = a.attachment ? '<p><a href="' + API_URL + '/api/attachments/' + a.id + '/' + a.attachment + '" target="_blank">📎下载附件: ' + a.attachment + '</a></p>' : '';
+        document.getElementById('submitAssignmentInfo').innerHTML = '<p><strong>标题:</strong> ' + a.title + '</p><p><strong>类型:</strong> ' + typeName + '</p><p><strong>分值:</strong> ' + a.points + '</p><p><strong>内容:</strong> ' + (a.content || '无') + '</p>' + attachmentInfo;
+        
+        document.getElementById('submitChoiceFields').style.display = (a.assignment_type === 'single_choice' || a.assignment_type === 'multiple_choice') ? 'block' : 'none';
+        document.getElementById('submitProgrammingFields').style.display = a.assignment_type === 'programming' ? 'block' : 'none';
+        
+        if (isGraded) {
+            document.getElementById('submitOptionsList').innerHTML = '<p class="text-muted">此题已批改，不可修改</p>';
+            document.getElementById('submitProgrammingFields').innerHTML = '<p class="text-muted">此题已批改，不可修改</p>';
+            document.getElementById('submitProgrammingFields').innerHTML += '<p><strong>我的答案:</strong> ' + (existingSubmission.student_answer || '(无)') + '</p>';
+            if (existingSubmission.attachment) {
+                document.getElementById('submitProgrammingFields').innerHTML += '<p><strong>我的附件:</strong> <a href="' + API_URL + '/api/submissions/file/' + existingSubmission.id + '/' + existingSubmission.attachment + '" target="_blank">📎 ' + existingSubmission.attachment + '</a></p>';
+            }
+            var submitBtn = document.querySelector('#submitModal .btn-primary');
+            if (submitBtn) {submitBtn.style.display = 'none';}
+        } else if (a.assignment_type === 'single_choice' || a.assignment_type === 'multiple_choice') {
+            var options = a.options ? JSON.parse(a.options) : [];
+            var html = '';
+            for (var i = 0; i < options.length; i++) {
+                var optLetter = String.fromCharCode(65 + i);
+                var isChecked = existingSubmission && existingSubmission.student_answer === optLetter;
+                html += '<div class="option-item"><input type="radio" name="submitAnswer" id="opt_' + optLetter + '" value="' + optLetter + '" ' + (isChecked ? 'checked' : '') + '><label for="opt_' + optLetter + '">' + optLetter + '. ' + options[i] + '</label></div>';
+            }
+            if (a.assignment_type === 'multiple_choice') {
+                html = html.replace(/radio/gi, 'checkbox');
+            }
+            document.getElementById('submitOptionsList').innerHTML = html || '<p>无选项</p>';
+            var submitBtn = document.querySelector('#submitModal .btn-primary');
+            if (submitBtn) {submitBtn.style.display = 'block';submitBtn.textContent = existingSubmission ? '更新答案' : '提交';}
+        } else {
+            var submitBtn = document.querySelector('#submitModal .btn-primary');
+            if (submitBtn) {submitBtn.style.display = 'block';submitBtn.textContent = existingSubmission ? '更新答案' : '提交';}
+        }
+        
+        document.getElementById('submitModal').classList.add('active');
+    } catch (e) {alert('获取作业失败: ' + e.message);}
+}
+
+function handleSubmissionFile(input) {
+    if (input.files[0]) {
+        currentSubmissionFile = input.files[0];
+        var list = document.getElementById('submissionFileList');
+        list.innerHTML = '<li><span class="file-icon">📎</span>' + currentSubmissionFile.name + '</li>';
+    }
+}
+
+async function submitAssignment() {
+    var assignmentId = document.getElementById('submitAssignmentId').value;
+    var submissionId = document.getElementById('currentSubmissionId').value;
+    var type = document.querySelector('#submitChoiceFields').style.display !== 'none' ? 'choice' : 'programming';
+    var answer = '';
+    
+    if (type === 'choice') {
+        var isMultiple = document.querySelector('input[name="submitAnswer"]') && document.querySelector('input[name="submitAnswer"]').type === 'checkbox';
+        if (isMultiple) {
+            var selected = document.querySelectorAll('input[name="submitAnswer"]:checked');
+            answer = Array.from(selected).map(cb => cb.value).join(',');
+        } else {
+            var sel = document.querySelector('input[name="submitAnswer"]:checked');
+            answer = sel ? sel.value : '';
+        }
+        if (!answer) {alert('请选择答案');return;}
+    }
+    
+    var data = {user_id: currentUser.id, assignment_id: parseInt(assignmentId), answer: answer};
+    
+    try {
+        var res = await fetch(API_URL + '/api/assignments/submit', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        var result = await res.json();
+        
+        if (result.success) {
+            var actualSubmissionId = submissionId || result.submission_id;
+            if (currentSubmissionFile && actualSubmissionId) {
+                var formData = new FormData();
+                formData.append('file', currentSubmissionFile);
+                await fetch(API_URL + '/api/submissions/file/' + actualSubmissionId, {method: 'POST', body: formData});
+            }
+            if (result.message) {
+                alert(result.message);
+            } else {
+                alert('提交成功！得分: ' + (result.score || 0));
+            }
+            closeModal('submitModal');
+            loadMyAssignments();
+            loadMySubmissions();
+            loadMyStats();
+        } else {
+            alert(result.error || '提交失败');
+        }
+    } catch (e) {alert('提交失败: ' + e.message);}
+}
+
+function showGradeModal(submissionId, studentName, currentScore, feedback) {
+    document.getElementById('gradeSubmissionId').value = submissionId;
+    document.getElementById('gradeStudentName').textContent = studentName;
+    document.getElementById('gradeScore').value = currentScore || 0;
+    document.getElementById('gradeFeedback').value = feedback || '';
+    document.getElementById('gradeModal').classList.add('active');
+    
+    fetchSubmissionDetail(submissionId);
+}
+
+async function fetchSubmissionDetail(submissionId) {
+    try {
+        var res = await fetch(API_URL + '/api/submissions/' + submissionId);
+        var data = await res.json();
+        if (data.submission) {
+            document.getElementById('gradeAnswer').textContent = data.submission.student_answer || '(无作答内容)';
+            if (data.submission.attachment) {
+                var studentName = data.submission.full_name || 'Student';
+                var dateStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+                var originalExt = data.submission.attachment.split('.').pop();
+                var downloadName = studentName + dateStr + '.' + originalExt;
+                var attachmentLink = '<a href="' + API_URL + '/api/submissions/file/' + data.submission.id + '/' + data.submission.attachment + '" target="_blank" download="' + downloadName + '">📎 ' + data.submission.attachment + '</a>';
+            } else {
+                var attachmentLink = '无';
+            }
+            document.getElementById('gradeAttachment').innerHTML = attachmentLink;
+        }
+    } catch (e) {
+        console.error('获取作答详情失败:', e);
+    }
+}
+
+async function gradeSubmission() {
+    var submissionId = document.getElementById('gradeSubmissionId').value;
+    var score = document.getElementById('gradeScore').value;
+    var feedback = document.getElementById('gradeFeedback').value;
+    
+    if (!submissionId) {alert('缺少作答ID');return;}
+    
+    try {
+        var res = await fetch(API_URL + '/api/submissions/' + submissionId + '/grade', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                score: parseFloat(score) || 0,
+                feedback: feedback,
+                teacher_id: currentUser.id
+            })
+        });
+        var result = await res.json();
+        if (result.success) {
+            alert('批改成功！');
+            closeModal('gradeModal');
+            viewAssignmentDetail(parseInt(document.getElementById('detailModal').dataset.assignmentId), document.getElementById('detailModalTitle').textContent.replace('作业详情 - ', ''));
+        } else {
+            alert(result.error || '批改失败');
+        }
+    } catch (e) {alert('批改失败: ' + e.message);}
+}
+
+async function loadMySubmissions() {
+    try {
+        var res = await fetch(API_URL + '/api/submissions/my?user_id=' + currentUser.id);
+        var data = await res.json();
+        var tbody = document.querySelector('#mySubmissionsTable tbody');
+        var html = '';
+        if (data.submissions && data.submissions.length > 0) {
+            data.submissions.sort(function(a,b){return new Date(b.submitted_at) - new Date(a.submitted_at);});
+            for (var s of data.submissions) {
+                var assignmentTitle = s.assignment_title;
+                var attachmentLink = s.attachment ? '<a href="' + API_URL + '/api/submissions/file/' + s.id + '/' + s.attachment + '" target="_blank">📎下载</a>' : '-';
+                var isGraded = s.score !== undefined && s.score >= 0;
+                var actionBtns = isGraded 
+                    ? '<span class="text-muted" style="color:#999;font-size:12px">已批改，不可修改</span>'
+                    : '<button class="btn btn-primary btn-sm" onclick="reSubmit(' + s.assignment_id + ',\'' + assignmentTitle.replace(/'/g, "\\'") + '\')">修改</button><button class="btn btn-danger btn-sm" onclick="deleteMySubmission(' + s.id + ')">删除</button>';
+                html += '<tr><td style="cursor:pointer;color:#3498db" onclick="viewMySubmissionDetail(' + s.assignment_id + ',\'' + assignmentTitle.replace(/'/g, "\\'") + '\')" title="点击查看题目">' + assignmentTitle + '</td><td>' + (s.student_answer || '-') + '</td><td>' + (s.score !== undefined ? s.score : '-') + '</td><td>' + (s.feedback || '-') + '</td><td>' + attachmentLink + '</td><td>' + new Date(s.submitted_at).toLocaleString() + '</td><td class="action-btns">' + actionBtns + '</td></tr>';
+            }
+        } else {
+            html = '<tr><td colspan="7" class="empty-message">暂无作答记录</td></tr>';
+        }
+        tbody.innerHTML = html;
+    } catch (e) {console.error(e);}
+}
+
+async function viewMySubmissionDetail(assignmentId, title) {
+    try {
+        var res = await fetch(API_URL + '/api/submissions/my?user_id=' + currentUser.id);
+        var data = await res.json();
+        var submission = data.submissions.find(function(s) { return s.assignment_id === assignmentId; });
+        if (!submission) return;
+        
+        var res2 = await fetch(API_URL + '/api/assignments/' + assignmentId);
+        var assignment = (await res2.json()).assignment;
+        
+        var typeName = assignment.assignment_type === 'single_choice' ? '单选题' : (assignment.assignment_type === 'multiple_choice' ? '多选题' : '机试题');
+        var html = '<div class="detail-view" style="padding:0;">';
+        html += '<div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:20px;margin:-20px -20px 20px -20px;border-radius:8px 8px 0 0;">';
+        html += '<h4 style="margin:0 0 10px 0;font-size:18px;">' + assignment.title + '</h4>';
+        html += '<div style="display:flex;gap:15px;font-size:13px;opacity:0.9;">';
+        html += '<span>📝 ' + typeName + '</span>';
+        html += '<span>⭐ ' + assignment.points + '分</span>';
+        html += '</div></div>';
+        
+        if (assignment.content) {
+            html += '<div style="margin-bottom:20px;"><strong style="display:block;margin-bottom:8px;color:#333;">题目内容</strong><div style="background:#f8f9fa;padding:12px;border-radius:8px;color:#555;line-height:1.6;">' + assignment.content + '</div></div>';
+        }
+        
+        var myAnswer = submission.student_answer || '(未作答)';
+        var correctAnswer = assignment.correct_answer || '(无正确答案)';
+        var isCorrect = submission.is_correct === 1;
+        
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;">';
+        html += '<div style="background:#e3f2fd;padding:15px;border-radius:8px;"><strong style="display:block;margin-bottom:8px;color:#1976d2;">我的答案</strong><div style="font-size:16px;font-weight:bold;color:#1976d2;">' + myAnswer + '</div></div>';
+        html += '<div style="background:#fff3e0;padding:15px;border-radius:8px;"><strong style="display:block;margin-bottom:8px;color:#f57c00;">正确答案</strong><div style="font-size:16px;font-weight:bold;color:#f57c00;">' + correctAnswer + '</div></div></div>';
+        
+        if (assignment.assignment_type === 'single_choice' || assignment.assignment_type === 'multiple_choice') {
+            var options = assignment.options ? JSON.parse(assignment.options) : [];
+            if (options.length > 0) {
+                html += '<div style="margin-bottom:20px;"><strong style="display:block;margin-bottom:12px;color:#333;">选项详情</strong>';
+                html += '<div style="display:grid;gap:8px;">';
+                var answerSet = new Set((submission.student_answer || '').split(',').map(function(a){return a.trim();}).filter(function(a){return a;}));
+                for (var i = 0; i < options.length; i++) {
+                    var optLetter = String.fromCharCode(65 + i);
+                    var isMyAnswer = answerSet.has(optLetter);
+                    var isCorrectAnswer = (assignment.correct_answer || '').split(',').map(function(a){return a.trim();}).filter(function(a){return a;}).includes(optLetter);
+                    var bgColor = '#f5f5f5';
+                    var borderColor = '#e0e0e0';
+                    var badge = '';
+                    if (isMyAnswer && isCorrectAnswer) {
+                        bgColor = '#c8e6c9';
+                        borderColor = '#81c784';
+                        badge = '<span style="background:#4caf50;color:white;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:8px;">正确</span>';
+                    } else if (isMyAnswer && !isCorrectAnswer) {
+                        bgColor = '#ffcdd2';
+                        borderColor = '#ef9a9a';
+                        badge = '<span style="background:#f44336;color:white;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:8px;">错误</span>';
+                    } else if (!isMyAnswer && isCorrectAnswer) {
+                        bgColor = '#fff9c4';
+                        borderColor = '#fff59d';
+                        badge = '<span style="background:#ffc107;color:white;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:8px;">正确答案</span>';
+                    }
+                    html += '<div style="background:' + bgColor + ';border:1px solid ' + borderColor + ';padding:12px 15px;border-radius:8px;display:flex;align-items:center;">';
+                    html += '<span style="font-weight:bold;margin-right:10px;color:#333;">' + optLetter + '.</span>';
+                    html += '<span style="flex:1;color:#333;">' + options[i] + '</span>';
+                    html += badge;
+                    html += '</div>';
+                }
+                html += '</div></div>';
+            }
+        }
+        
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;">';
+        html += '<div style="background:' + (submission.score !== undefined ? '#e8f5e9' : '#fafafa') + ';padding:15px;border-radius:8px;"><strong style="display:block;margin-bottom:8px;color:#333;">得分</strong><div style="font-size:20px;font-weight:bold;color:' + (submission.score !== undefined ? '#4caf50' : '#999') + ';">' + (submission.score !== undefined ? submission.score : '待批改') + '</div></div>';
+        html += '<div style="background:#f5f5f5;padding:15px;border-radius:8px;"><strong style="display:block;margin-bottom:8px;color:#333;">提交时间</strong><div style="color:#666;">' + new Date(submission.submitted_at).toLocaleString() + '</div></div></div>';
+        
+        if (submission.feedback) {
+            html += '<div style="background:#fff3e0;padding:15px;border-radius:8px;border-left:4px solid #ff9800;"><strong style="color:#ff9800;">老师评语</strong><p style="margin:8px 0 0 0;color:#666;line-height:1.6;">' + submission.feedback + '</p></div>';
+        }
+        
+        if (submission.attachment) {
+            html += '<div style="margin-top:20px;padding-top:15px;border-top:1px solid #eee;"><strong style="color:#333;">我的附件</strong><p style="margin:8px 0 0 0;"><a href="' + API_URL + '/api/submissions/file/' + submission.id + '/' + submission.attachment + '" target="_blank" style="color:#1976d2;text-decoration:none;display:inline-flex;align-items:center;"><span style="font-size:18px;margin-right:5px;">📎</span>' + submission.attachment + '</a></p></div>';
+        }
+        
+        html += '</div>';
+        
+        document.getElementById('detailModalTitle').innerHTML = '<span style="font-weight:normal;font-size:14px;">答题详情</span>';
+        document.getElementById('detailContent').innerHTML = html;
+        document.getElementById('detailModal').classList.add('active');
+    } catch (e) {alert('获取详情失败: ' + e.message);}
+}
+
+function reSubmit(id, title, answer) {
+    showSubmitModal(id, title);
+}
+
+async function deleteMySubmission(id) {
+    try {
+        var res = await fetch(API_URL + '/api/submissions/' + id);
+        var data = await res.json();
+        if (data.submission && ((data.submission.score !== undefined && data.submission.score > 0) || data.submission.feedback)) {
+            alert('已批改的作答不可删除');
+            return;
+        }
+    } catch (e) {}
+    if (!confirm('确定删除这份作答？')) return;
+    try {
+        var res = await fetch(API_URL + '/api/submissions/' + id, {method: 'DELETE'});
+        var data = await res.json();
+        if (data.success) {loadMySubmissions();} else {alert(data.error || '删除失败');}
+    } catch (e) {alert('删除失败: ' + e.message);}
+}
+
+async function loadOnlineUsers() {
+    try {
+        var res = await fetch(API_URL + '/api/attendance/online');
+        var data = await res.json();
+        document.getElementById('onlineCount').textContent = (data.online || []).length;
+        var tbody = document.querySelector('#attendanceTable tbody');
+        var html = '';
+        if (data.online && data.online.length > 0) {
+            for (var u of data.online) {
+                var lastActive = new Date(u.last_active).toLocaleString();
+                html += '<tr><td>' + (u.full_name || u.username) + '</td><td><span class="role-badge role-' + u.role + '">' + getRoleName(u.role) + '</span></td><td>-</td><td>' + lastActive + '</td><td>-</td><td><span class="online-badge">在线</span></td></tr>';
+            }
+        }
+        tbody.innerHTML = html || '<tr><td colspan="6" class="empty-message">暂无在线用户</td></tr>';
+    } catch (e) {console.error(e);}
+}
+
+async function loadAttendanceRecords() {
+    try {
+        var res = await fetch(API_URL + '/api/attendance/records');
+        var data = await res.json();
+        var tbody = document.querySelector('#attendanceTable tbody');
+        var html = '';
+        if (data.records && data.records.length > 0) {
+            for (var r of data.records) {
+                var duration = r.session_duration ? Math.round(r.session_duration / 60) + '分钟' : '-';
+                var lastActive = r.last_active ? new Date(r.last_active).toLocaleString() : '-';
+                var status = r.last_active && new Date(r.last_active) > new Date(Date.now() - 5*60*1000) ? '<span class="online-badge">在线</span>' : '<span class="offline-badge">离线</span>';
+                html += '<tr><td>' + (r.full_name || r.username) + '</td><td><span class="role-badge role-' + r.role + '">' + getRoleName(r.role) + '</span></td><td>' + new Date(r.login_time).toLocaleString() + '</td><td>' + lastActive + '</td><td>' + duration + '</td><td>' + status + '</td></tr>';
+            }
+        } else {
+            html = '<tr><td colspan="6" class="empty-message">暂无考勤记录</td></tr>';
+        }
+        tbody.innerHTML = html;
+    } catch (e) {console.error(e);}
+}
+
+async function loadClassStats() {
+    try {
+        var res = await fetch(API_URL + '/api/stats/class');
+        var data = await res.json();
+        document.getElementById('statStudents').textContent = data.total_students || 0;
+        document.getElementById('statOnline').textContent = '-';
+        document.getElementById('statSessions').textContent = data.today_sessions || 0;
+    } catch (e) {console.error(e);}
+}
+
+async function loadLogs() {
+    try {
+        var res = await fetch(API_URL + '/api/logs');
+        var data = await res.json();
+        var html = '';
+        for (var l of (data.logs || [])) {
+            html += '<div class="log-entry"><span class="time">' + new Date(l.created_at).toLocaleString() + '</span> <span class="action">' + l.username + '</span> ' + l.action + ' ' + l.target + ': ' + l.details + '</div>';
+        }
+        document.getElementById('logsList').innerHTML = html || '<p class="empty-message">暂无日志</p>';
+    } catch (e) {document.getElementById('logsList').innerHTML = '<p class="empty-message">加载失败</p>';}
+}
+
+function autoSignin() {
+    if (currentUser && currentUser.role === 'student') {
+        fetch(API_URL + '/api/attendance/auto', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user_id: currentUser.id})
+        }).catch(function(e) {console.log('自动签到失败:', e);});
+    }
+}
+
+var whiteboardCanvas, whiteboardCtx, isDrawing = false, isPanning = false;
+var lastX = 0, lastY = 0, startX = 0, startY = 0;
+var currentTool = 'pen', whiteboardColor = '#000000', lineWidth = 2, drawAllowed = true;
+var whiteboardImage = null;
+var pendingDrawings = [];
+var syncTimer = null;
+var lastSyncTime = 0;
+
+function initWhiteboard() {
+    whiteboardCanvas = document.getElementById('whiteboardCanvas');
+    var container = whiteboardCanvas.parentElement;
+    whiteboardCanvas.width = container.offsetWidth;
+    whiteboardCanvas.height = 500;
+    whiteboardCtx = whiteboardCanvas.getContext('2d');
+    
+    whiteboardCtx.strokeStyle = whiteboardColor;
+    whiteboardCtx.lineWidth = lineWidth;
+    whiteboardCtx.lineCap = 'round';
+    whiteboardCtx.lineJoin = 'round';
+    
+    whiteboardCanvas.addEventListener('mousedown', handleMouseDown);
+    whiteboardCanvas.addEventListener('mousemove', handleMouseMove);
+    whiteboardCanvas.addEventListener('mouseup', handleMouseUp);
+    whiteboardCanvas.addEventListener('mouseleave', handleMouseUp);
+    whiteboardCanvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+    
+    whiteboardCanvas.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        var touch = e.touches[0];
+        var rect = whiteboardCanvas.getBoundingClientRect();
+        handleMouseDown({ offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top, button: e.button });
+    }, { passive: false });
+    
+    whiteboardCanvas.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        var touch = e.touches[0];
+        var rect = whiteboardCanvas.getBoundingClientRect();
+        handleMouseMove({ offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top });
+    }, { passive: false });
+    
+    whiteboardCanvas.addEventListener('touchend', handleMouseUp);
+    
+    document.getElementById('colorPicker').addEventListener('change', function(e) {
+        whiteboardColor = e.target.value;
+    });
+    
+    if (currentUser && currentUser.role === 'teacher') {
+        document.getElementById('whiteboardTeacherControls').style.display = 'flex';
+    }
+    
+    loadWhiteboard();
+    startSyncLoop();
+}
+
+function toggleWhiteboardDraw() {
+    var allowed = document.getElementById('whiteboardAllowDraw').checked;
+    fetch(API_URL + '/api/whiteboard/settings', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({allowed: allowed})
+    }).then(function(res){return res.json();}).then(function(data){
+        if (!data.success) {
+            alert('设置失败');
+            document.getElementById('whiteboardAllowDraw').checked = !allowed;
+        } else {
+            updateDrawStatus();
+        }
+    });
+}
+
+function setTool(tool) {
+    currentTool = tool;
+    document.querySelectorAll('.whiteboard-toolbar button').forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    var btnId = 'btn' + tool.charAt(0).toUpperCase() + tool.slice(1);
+    var btn = document.getElementById(btnId);
+    if (btn) btn.classList.add('active');
+    if (event && event.target) event.target.classList.add('active');
+}
+
+function setLineWidth(width) {
+    lineWidth = width;
+}
+
+function handleMouseDown(e) {
+    if (!drawAllowed && currentUser.role !== 'teacher') {
+        showStatus('老师没有允许使用');
+        return;
+    }
+    
+    isDrawing = true;
+    isPanning = e.button === 2;
+    lastX = e.offsetX;
+    lastY = e.offsetY;
+    startX = e.offsetX;
+    startY = e.offsetY;
+    
+    if (currentTool === 'text') {
+        var text = prompt('输入文字：');
+        if (text) {
+            whiteboardCtx.font = lineWidth * 8 + 'px Arial';
+            whiteboardCtx.fillStyle = whiteboardColor;
+            whiteboardCtx.fillText(text, lastX, lastY);
+            saveDrawing({type: 'text', x: lastX, y: lastY, text: text, color: whiteboardColor, size: lineWidth * 8});
+        }
+        isDrawing = false;
+    }
+}
+
+function handleMouseMove(e) {
+    if (!isDrawing) return;
+    
+    whiteboardCtx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : whiteboardColor;
+    whiteboardCtx.lineWidth = currentTool === 'eraser' ? lineWidth * 5 : lineWidth;
+    
+    whiteboardCtx.beginPath();
+    whiteboardCtx.moveTo(lastX, lastY);
+    whiteboardCtx.lineTo(e.offsetX, e.offsetY);
+    whiteboardCtx.stroke();
+    
+    var drawing = {
+        type: currentTool,
+        x1: lastX,
+        y1: lastY,
+        x2: e.offsetX,
+        y2: e.offsetY,
+        color: whiteboardCtx.strokeStyle,
+        width: whiteboardCtx.lineWidth
+    };
+    
+    pendingDrawings.push(drawing);
+    scheduleSync();
+    
+    lastX = e.offsetX;
+    lastY = e.offsetY;
+}
+
+function handleMouseUp(e) {
+    if (!isDrawing) return;
+    isDrawing = false;
+    isPanning = false;
+    syncNow();
+}
+
+function scheduleSync() {
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(syncNow, 100);
+}
+
+function syncNow() {
+    var now = Date.now();
+    if (now - lastSyncTime < 500 && pendingDrawings.length < 10) return;
+    if (pendingDrawings.length === 0) return;
+    
+    lastSyncTime = now;
+    var drawings = pendingDrawings.slice();
+    pendingDrawings = [];
+    
+    var dataUrl = whiteboardCanvas.toDataURL();
+    fetch(API_URL + '/api/whiteboard', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            user_id: currentUser.id,
+            content: dataUrl,
+            drawings: drawings
+        })
+    }).then(function() {
+        showStatus('已同步 - ' + new Date().toLocaleTimeString());
+    }).catch(function() {
+        pendingDrawings = drawings.concat(pendingDrawings);
+    });
+}
+
+function startSyncLoop() {
+    setInterval(function() {
+        if (pendingDrawings.length > 0) {
+            syncNow();
+        }
+        loadWhiteboard();
+    }, 2000);
+}
+
+function showStatus(msg) {
+    document.getElementById('syncStatus').textContent = msg;
+}
+
+function clearWhiteboard() {
+    if (!drawAllowed && currentUser.role !== 'teacher') {
+        showStatus('老师没有允许使用');
+        return;
+    }
+    whiteboardCtx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+    whiteboardImage = null;
+    syncNow();
+}
+
+async function loadWhiteboard() {
+    if (!currentUser) return;
+    try {
+        var res = await fetch(API_URL + '/api/whiteboard');
+        var data = await res.json();
+        
+        drawAllowed = currentUser.role === 'teacher' || data.allowed === true;
+        updateDrawStatus();
+        
+        if (currentUser.role === 'teacher' && data.allowed === undefined) {
+            drawAllowed = true;
+        }
+        
+        if (data.drawings && data.drawings.length > 0) {
+            loadRemoteDrawings(data.drawings);
+        }
+        
+        if (data.content && data.content !== (whiteboardImage || '')) {
+            whiteboardImage = data.content;
+            var img = new Image();
+            img.onload = function() {
+                whiteboardCtx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+                whiteboardCtx.drawImage(img, 0, 0);
+            };
+            img.src = data.content;
+        }
+        
+        var onlineCount = data.online_count || 0;
+        document.getElementById('whiteboardOnline').textContent = '👥 ' + onlineCount + ' 人在线';
+    } catch (e) { console.error('加载白板失败:', e); }
+}
+
+function loadRemoteDrawings(drawings) {
+    for (var i = 0; i < drawings.length; i++) {
+        var d = drawings[i];
+        whiteboardCtx.strokeStyle = d.color || '#000000';
+        whiteboardCtx.lineWidth = d.width || 2;
+        whiteboardCtx.beginPath();
+        whiteboardCtx.moveTo(d.x1, d.y1);
+        whiteboardCtx.lineTo(d.x2, d.y2);
+        whiteboardCtx.stroke();
+    }
+}
+
+function updateDrawStatus() {
+    var overlay = document.getElementById('whiteboardOverlay');
+    var toolbarBtns = document.querySelectorAll('.whiteboard-toolbar button:not(:last-child)');
+    
+    if (drawAllowed) {
+        overlay.style.display = 'none';
+        toolbarBtns.forEach(function(btn) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        });
+    } else {
+        overlay.style.display = 'flex';
+        toolbarBtns.forEach(function(btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        });
+    }
+}
+    
+function changePassword() {
+    var oldPwd = document.getElementById('oldPassword').value;
+    var newPwd = document.getElementById('newPassword').value;
+    var confirmPwd = document.getElementById('confirmPassword').value;
+    if (!oldPwd || !newPwd) {alert('请填写完整信息');return;}
+    if (newPwd !== confirmPwd) {alert('两次密码不一致');return;}
+    if (newPwd.length < 6) {alert('密码长度至少6位');return;}
+    fetch(API_URL + '/api/users/password', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_id: currentUser.id, old_password: oldPwd, new_password: newPwd})
+    }).then(res => res.json()).then(data => {
+        if (data.success) {alert('密码修改成功');closeModal('passwordModal');} else {alert(data.error || '修改失败');}
+    }).catch(e => alert('修改失败: ' + e.message));
+}
+
+function closeModal(id) {
+    var modal = document.getElementById(id);
+    if (modal) modal.classList.remove('active');
+}
+
+document.getElementById('passwordModal') && document.getElementById('passwordModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('passwordModal');
+});
+document.getElementById('userModal') && document.getElementById('userModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('userModal');
+});
+document.getElementById('assignmentModal') && document.getElementById('assignmentModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('assignmentModal');
+});
+document.getElementById('detailModal') && document.getElementById('detailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('detailModal');
+});
+document.getElementById('submitModal') && document.getElementById('submitModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('submitModal');
+});
+
+var gameState = {matchId:null, opponent:null, questions:[], currentQ:null, currentQIdx:0, selected:[], canAnswer:false,
+                 hp:100, maxHp:100, opponentHp:100, opponentMaxHp:100, buffs:{dmg:0, shield:false},
+                 inventory:[], playerData:null, isMyTurn:true, waitingAnswer:false, waitingResult:false, isTeacher:false,
+                 lastActive:null, inGame:false, inMatching:false, isPlayer1:false};
+var gamePollTimer = null;
+var gameHeartbeatTimer = null;
+var GAME_ITEMS = {heal:{e:'🍎',t:'heal'},shield:{e:'🛡️',t:'shield'},dmg:{e:'⚡',t:'dmg'}};
+
+async function initGame() {
+    console.log('initGame called, resetting state...');
+    
+    // 停止所有游戏定时器
+    if (gamePollTimer) clearTimeout(gamePollTimer);
+    if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
+    
+    // 重置游戏状态
+    gameState.inGame = false;
+    gameState.inMatching = false;
+    gameState.matchId = null;
+    gameState.currentQ = null;
+    gameState.waitingResult = false;
+    gameState.waitingAnswer = false;
+    gameState.hp = 100;
+    gameState.opponentHp = 100;
+    gameState.buffs = {dmg:0, shield:false};
+    gameState.selected = [];
+    gameState.canAnswer = false;
+    
+    // 强制显示游戏大厅，隐藏游戏对战区域
+    document.getElementById('gameLobbyArea').style.display = 'block';
+    document.getElementById('gamePlayArea').style.display = 'none';
+    
+    loadPlayerGameData();
+    loadGameLeaderboard();
+    
+    if (currentUser.role === 'teacher' || currentUser.role === 'admin') {
+        gameState.isTeacher = true;
+        document.getElementById('teacherGameArea').style.display = 'block';
+        document.getElementById('studentGameArea').style.display = 'none';
+        loadStudentGameStatus();
+        setInterval(loadStudentGameStatus, 3000);
+    } else {
+        document.getElementById('teacherGameArea').style.display = 'none';
+        document.getElementById('studentGameArea').style.display = 'block';
+        // 延迟检查匹配状态，确保UI先显示大厅
+        setTimeout(function() {
+            checkMyGameMatch();
+        }, 100);
+    }
+}
+
+async function loadStudentGameStatus() {
+    try {
+        var res = await fetch(API_URL + '/api/game/students');
+        var data = await res.json();
+        var html = '';
+        if (data.students && data.students.length > 0) {
+            html = '<table style="width:100%;font-size:13px"><thead><tr><th>学生</th><th>状态</th><th>勋章</th></tr></thead><tbody>';
+            data.students.forEach(function(s) {
+                var statusClass = s.status === 'matching' ? 'color:#f39c12' : (s.status === 'playing' ? 'color:#27ae60' : 'color:#999');
+                var statusText = s.status === 'matching' ? '🔍 匹配中' : (s.status === 'playing' ? '⚔️ 对战中' : '🛑 离线');
+                html += '<tr><td>' + s.full_name + '</td><td style="' + statusClass + '">' + statusText + '</td><td>' + s.medals + '</td></tr>';
+            });
+            html += '</tbody></table>';
+        } else {
+            html = '<p style="color:#999;text-align:center">暂无学生在线</p>';
+        }
+        document.getElementById('studentGameStatus').innerHTML = html;
+    } catch(e) {
+        document.getElementById('studentGameStatus').innerHTML = '<p style="color:#999;text-align:center">加载失败</p>';
+    }
+}
+
+async function checkMyGameMatch() {
+    try {
+        var url = API_URL + '/api/game/check?user_id=' + currentUser.id;
+        var res = await fetch(url);
+        var data = await res.json();
+        console.log('checkMyGameMatch:', data);
+        
+        // 只有在没有正在进行中的游戏时才进入游戏
+        if (data.in_match && data.match && !data.match.game_over) {
+            console.log('Found active match:', data.match);
+            var match = data.match;
+            gameState.inMatching = false;
+            gameState.inGame = true;
+            gameState.matchId = match.match_id;
+            gameState.currentQIdx = match.current_question_idx;
+            gameState.waitingResult = false;
+            var isP1 = match.player1 === currentUser.id;
+            gameState.isPlayer1 = isP1;
+            gameState.opponent = isP1 ? match.player2_data : match.player1_data;
+            gameState.hp = isP1 ? match.player1_hp : match.player2_hp;
+            gameState.opponentHp = isP1 ? match.player2_hp : match.player1_hp;
+            gameState.maxHp = 100;
+            gameState.opponentMaxHp = 100;
+            gameState.buffs = {dmg:0, shield:false};
+            
+            // 隐藏游戏大厅，显示游戏对战区域
+            document.getElementById('gameLobbyArea').style.display = 'none';
+            document.getElementById('gamePlayArea').style.display = 'block';
+            
+            // 设置角色头像：Player1是英雄(左侧)，Player2是怪物(左侧)
+            if (gameState.isPlayer1) {
+                document.getElementById('heroGameAvatar').textContent = '🧙‍♀️';
+                document.getElementById('enemyGameAvatar').textContent = '👾';
+            } else {
+                document.getElementById('heroGameAvatar').textContent = '👾';
+                document.getElementById('enemyGameAvatar').textContent = '🧙‍♀️';
+            }
+            
+            document.getElementById('enemyGameName').textContent = gameState.opponent.full_name || gameState.opponent.username;
+            document.getElementById('heroGameHp').style.width = '100%';
+            document.getElementById('enemyGameHp').style.width = '100%';
+            
+            if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
+            gameHeartbeatTimer = setInterval(sendGameHeartbeat, 30000);
+            pollGameState();
+        } else if (data.matching) {
+            gameState.inGame = false;
+            gameState.inMatching = true;
+            document.getElementById('matchStatus').textContent = '等待匹配中...';
+            document.getElementById('matchBtn').disabled = true;
+            document.getElementById('matchBtn').textContent = '匹配中...';
+            checkMyGameMatchAfterStart();
+        } else {
+            gameState.inGame = false;
+            gameState.inMatching = false;
+            gameState.matchId = null;
+            // 确保显示游戏大厅
+            document.getElementById('gameLobbyArea').style.display = 'block';
+            document.getElementById('gamePlayArea').style.display = 'none';
+            document.getElementById('matchStatus').textContent = '点击开始匹配';
+            document.getElementById('matchBtn').disabled = false;
+            document.getElementById('matchBtn').textContent = '🎮 开始匹配';
+        }
+    } catch(e) { 
+        console.error('checkMyGameMatch error:', e);
+        gameState.inMatching = false;
+        setTimeout(checkMyGameMatch, 3000);
+    }
+}
+
+async function loadPlayerGameData() {
+    try {
+        var res = await fetch(API_URL + '/api/game/player?user_id=' + currentUser.id);
+        var data = await res.json();
+        gameState.playerData = data.player;
+        document.getElementById('playerGold').textContent = data.player.gold || 0;
+        document.getElementById('playerMedals').textContent = data.player.medals || 0;
+        document.getElementById('playerWins').textContent = data.player.wins || 0;
+        gameState.inventory = data.player.inventory || [];
+        renderGameInventory();
+    } catch(e) {console.error(e);}
+}
+
+function renderGameInventory() {
+    var html = '';
+    gameState.inventory.forEach(function(item, i) {
+        html += '<div class="game-item-slot" onclick="useGameItem(' + i + ')" title="' + (item.name || '') + '">' + item.e + '</div>';
+    });
+    document.getElementById('gameInventory').innerHTML = html || '<span style="color:#999;font-size:13px">背包空空的~</span>';
+}
+
+async function startMatch() {
+    var btn = document.getElementById('matchBtn');
+    btn.disabled = true;
+    btn.textContent = '匹配中...';
+    document.getElementById('matchStatus').textContent = '正在寻找对手...';
+    gameState.inMatching = true;
+    gameState.matchId = null;
+    gameState.inGame = false;
+    
+    try {
+        var res = await fetch(API_URL + '/api/game/match', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({user_id: currentUser.id})
+        });
+        var data = await res.json();
+        console.log('startMatch response:', data);
+        if (data.success) {
+            gameState.inMatching = false;
+            gameState.inGame = true;
+            gameState.matchId = data.match_id;
+            gameState.isPlayer1 = data.is_player1 === true;
+            gameState.player1Id = data.player1_id;
+            gameState.opponent = data.opponent;
+            gameState.hp = 100;
+            gameState.opponentHp = 100;
+            gameState.maxHp = 100;
+            gameState.opponentMaxHp = 100;
+            gameState.buffs = {dmg:0, shield:false};
+            gameState.waitingResult = false;
+            
+            // 隐藏游戏大厅，显示游戏对战区域
+            document.getElementById('gameLobbyArea').style.display = 'none';
+            document.getElementById('gamePlayArea').style.display = 'block';
+            
+            // 设置角色头像：Player1是英雄(左侧)，Player2是怪物(左侧)
+            if (gameState.isPlayer1) {
+                document.getElementById('heroGameAvatar').textContent = '🧙‍♀️';
+                document.getElementById('enemyGameAvatar').textContent = '👾';
+            } else {
+                document.getElementById('heroGameAvatar').textContent = '👾';
+                document.getElementById('enemyGameAvatar').textContent = '🧙‍♀️';
+            }
+            
+            document.getElementById('enemyGameName').textContent = gameState.opponent.full_name || gameState.opponent.username;
+            document.getElementById('heroGameHp').style.width = '100%';
+            document.getElementById('enemyGameHp').style.width = '100%';
+            
+            if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
+            gameHeartbeatTimer = setInterval(sendGameHeartbeat, 30000);
+            pollGameState();
+        } else {
+            document.getElementById('matchStatus').textContent = data.message || '等待匹配中...';
+            checkMyGameMatchAfterStart();
+        }
+    } catch(e) {
+        console.error('startMatch error:', e);
+        document.getElementById('matchStatus').textContent = '匹配失败: ' + e.message;
+        btn.disabled = false;
+        btn.textContent = '🎮 开始匹配';
+        gameState.inMatching = false;
+    }
+}
+
+function checkMyGameMatchAfterStart() {
+    if (gameState.inMatching) {
+        fetch(API_URL + '/api/game/check?user_id=' + currentUser.id)
+            .then(function(res){return res.json();})
+            .then(function(data){
+                console.log('checkMyGameMatchAfterStart:', data);
+                if (data.in_match && data.match) {
+                    var match = data.match;
+                    gameState.inMatching = false;
+                    gameState.inGame = true;
+                    gameState.matchId = match.match_id;
+                    var isP1 = match.player1 === currentUser.id;
+                    gameState.isPlayer1 = isP1;
+                    gameState.opponent = isP1 ? match.player2_data : match.player1_data;
+                    gameState.hp = 100;
+                    gameState.opponentHp = 100;
+                    gameState.maxHp = 100;
+                    gameState.opponentMaxHp = 100;
+                    gameState.buffs = {dmg:0, shield:false};
+                    
+                    // 隐藏游戏大厅，显示游戏对战区域
+                    document.getElementById('gameLobbyArea').style.display = 'none';
+                    document.getElementById('gamePlayArea').style.display = 'block';
+                    
+                    // 设置角色头像：Player1是英雄(左侧)，Player2是怪物(左侧)
+                    if (gameState.isPlayer1) {
+                        document.getElementById('heroGameAvatar').textContent = '🧙‍♀️';
+                        document.getElementById('enemyGameAvatar').textContent = '👾';
+                    } else {
+                        document.getElementById('heroGameAvatar').textContent = '👾';
+                        document.getElementById('enemyGameAvatar').textContent = '🧙‍♀️';
+                    }
+                    
+                    document.getElementById('enemyGameName').textContent = gameState.opponent.full_name || gameState.opponent.username;
+                    document.getElementById('heroGameHp').style.width = '100%';
+                    document.getElementById('enemyGameHp').style.width = '100%';
+                    updateGameUI();
+                    
+                    if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
+                    gameHeartbeatTimer = setInterval(sendGameHeartbeat, 30000);
+                    pollGameState();
+                } else if (data.matching) {
+                    setTimeout(checkMyGameMatchAfterStart, 1000);
+                } else {
+                    gameState.inMatching = false;
+                    document.getElementById('matchStatus').textContent = '点击开始匹配';
+                    document.getElementById('matchBtn').disabled = false;
+                    document.getElementById('matchBtn').textContent = '🎮 开始匹配';
+                }
+            })
+            .catch(function(){
+                setTimeout(checkMyGameMatchAfterStart, 2000);
+            });
+    }
+}
+
+function pollGameState() {
+    if (!gameState.inGame) {
+        console.log('[LOG] pollGameState skipped: inGame=', gameState.inGame);
+        return;
+    }
+
+    var url = API_URL + '/api/game/state?match_id=' + gameState.matchId + '&user_id=' + currentUser.id;
+    console.log('[LOG] pollGameState calling:', url);
+    console.log('[LOG] currentQ:', gameState.currentQ, 'waitingResult:', gameState.waitingResult, 'currentQIdx:', gameState.currentQIdx);
+    fetch(url)
+        .then(function(res){return res.json();})
+        .then(function(data){
+            console.log('[LOG] pollGameState response:', JSON.stringify(data));
+
+            if (!data.success) {
+                console.log('pollGameState failed:', data.message);
+                if (data.timeout) {
+                    showGameResult(true, '对手超时，胜利！', 0);
+                } else if (data.game_over) {
+                    handleGameOver({winner: data.winner});
+                } else if (data.opponent_left) {
+                    showGameResult(true, '对手已离开，胜利！', 0);
+                } else {
+                    // 检查是否还在匹配中
+                    checkMyGameMatch();
+                }
+                return;
+            }
+
+            // 检查对手是否离开
+            if (data.opponent_left) {
+                showGameResult(true, '对手已离开，胜利！', 0);
+                return;
+            }
+
+            // 更新血量
+            gameState.hp = data.hp;
+            gameState.opponentHp = data.opponent_hp;
+            
+            // 更新UI
+            document.getElementById('heroGameHp').style.width = (gameState.hp / gameState.maxHp * 100) + '%';
+            document.getElementById('enemyGameHp').style.width = (gameState.opponentHp / gameState.opponentMaxHp * 100) + '%';
+            
+            // 游戏结束
+            if (data.game_over) {
+                handleGameOver({winner: data.winner});
+                return;
+            }
+            
+            // 检查是否收到回合结果（优先处理）
+            console.log('[LOG] Checking round_result:', 'data.round_result=' + !!data.round_result, 'waitingResult=' + gameState.waitingResult, 'both_answered=' + data.both_answered);
+            if (data.round_result && !gameState.waitingResult) {
+                console.log('[LOG] Processing round_result:', JSON.stringify(data.round_result));
+                var r = data.round_result;
+                var isP1 = gameState.isPlayer1;
+                var myDmg = isP1 ? r.p1_dmg : r.p2_dmg;
+                var myHp = isP1 ? r.p1_hp : r.p2_hp;
+                var oppHp = isP1 ? r.p2_hp : r.p1_hp;
+                var myCorrect = isP1 ? r.p1_correct : r.p2_correct;
+                var oppCorrect = isP1 ? r.p2_correct : r.p1_correct;
+                
+                var emoji = '';
+                var msg = '';
+                if (myCorrect && !oppCorrect) {
+                    emoji = '✅';
+                    msg = '你答对了！对方答错';
+                } else if (!myCorrect && oppCorrect) {
+                    emoji = '❌';
+                    msg = '你答错了！对方答对';
+                } else if (myCorrect && oppCorrect) {
+                    emoji = '🤝';
+                    msg = '双方都答对了！';
+                } else {
+                    emoji = '😔';
+                    msg = '双方都答错了！';
+                }
+                
+                document.getElementById('gameMessage').innerHTML = '<span style="font-size:24px">' + emoji + '</span><br><strong>' + msg + '</strong><br><span style="color:#999">我:' + myHp + ' 对手:' + oppHp + '</span>';
+                
+                gameState.hp = myHp;
+                gameState.opponentHp = oppHp;
+                document.getElementById('heroGameHp').style.width = (myHp / 100 * 100) + '%';
+                document.getElementById('enemyGameHp').style.width = (oppHp / 100 * 100) + '%';
+                
+                // 双方都已答题，显示结果后自动进入下一题
+                gameState.waitingResult = true;
+                gameState.currentQ = null;  // 清空当前题目，允许加载新题
+                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px;font-size:16px">即将进入下一题...</div>';
+                
+                setTimeout(function(){
+                    nextGameQuestion();
+                }, 3000);
+                return;
+            }
+            
+            // 检查是否进入下一题
+            console.log('[LOG] Checking question load:', 'current_question=' + !!data.current_question, 'currentQ=' + !!gameState.currentQ, 'question_idx=' + data.current_question_idx + ' vs ' + gameState.currentQIdx);
+            if (data.current_question && !gameState.currentQ) {
+                // 第一次加载题目或题目未显示
+                console.log('[LOG] Loading question:', data.current_question);
+                gameState.currentQIdx = data.current_question_idx;
+                gameState.waitingAnswer = false;
+                gameState.waitingResult = false;  // 重置状态
+                showGameQuestion(data.current_question);
+            } else if (data.current_question && data.current_question_idx !== gameState.currentQIdx) {
+                // 进入新的一题
+                console.log('New question:', data.current_question);
+                gameState.currentQIdx = data.current_question_idx;
+                gameState.waitingAnswer = false;
+                gameState.waitingResult = false;  // 重置状态
+                showGameQuestion(data.current_question);
+            } else if (data.player_answered && !data.round_result && !gameState.waitingResult) {
+                // 当前玩家已答，但对方还没答，且没有收到回合结果
+                console.log('Waiting for opponent...');
+                gameState.waitingAnswer = true;
+                document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">⏳</span><br>已答题，等待对手...';
+                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';
+            } else if (!data.current_question && data.current_question_idx >= data.total_questions) {
+                // 所有题目答完了
+                handleGameOver({winner: data.hp > data.opponent_hp ? currentUser.id : (data.hp < data.opponent_hp ? 'opponent' : 'draw')});
+            }
+            
+            sendGameHeartbeat();
+            gamePollTimer = setTimeout(pollGameState, 1000);
+        })
+        .catch(function(e){ 
+            console.error('pollGameState error:', e);
+            gamePollTimer = setTimeout(pollGameState, 2000); 
+        });
+}
+
+function updateGameUI() {
+    document.getElementById('heroGameHp').style.width = (gameState.hp / gameState.maxHp * 100) + '%';
+    document.getElementById('enemyGameHp').style.width = (gameState.opponentHp / gameState.opponentMaxHp * 100) + '%';
+    var buffs = '';
+    if (gameState.buffs.shield) buffs += '🛡️';
+    if (gameState.buffs.dmg > 0) buffs += '⚡x' + gameState.buffs.dmg;
+    document.getElementById('heroGameBuffs').textContent = buffs;
+}
+
+function showGameQuestion(q) {
+    gameState.currentQ = q;
+    gameState.selected = [];
+    gameState.waitingAnswer = true;
+    gameState.canAnswer = true;
+    document.getElementById('gameQType').textContent = q.is_multi ? '多选题' : '单选题';
+    document.getElementById('gameQText').textContent = q.question;
+    var opts = document.getElementById('gameOptions');
+    opts.innerHTML = '';
+    var letters = ['A','B','C','D'];
+    q.options.forEach(function(opt, i) {
+        var btn = document.createElement('div');
+        btn.className = 'game-option-btn';
+        btn.innerHTML = '<span style="font-weight:bold;color:#a29bfe;margin-right:8px">' + letters[i] + '</span>' + opt;
+        btn.onclick = function() { selectGameOption(i, btn, letters[i], q.is_multi); };
+        opts.appendChild(btn);
+    });
+    document.getElementById('gameActionBtns').style.display = q.is_multi ? 'block' : 'none';
+    document.getElementById('gameSubmitBtn').style.display = 'none';
+    document.getElementById('gameContinueBtn').style.display = 'none';
+}
+
+function selectGameOption(idx, btn, letter, isMulti) {
+    if (!gameState.canAnswer) return;
+    if (isMulti) {
+        if (gameState.selected.includes(letter)) {
+            gameState.selected = gameState.selected.filter(function(t){return t !== letter;});
+            btn.classList.remove('selected');
+        } else {
+            gameState.selected.push(letter);
+            btn.classList.add('selected');
+        }
+        document.getElementById('gameSubmitBtn').style.display = gameState.selected.length > 0 ? 'block' : 'none';
+    } else {
+        gameState.canAnswer = false;
+        gameState.selected = [letter];
+        document.querySelectorAll('.game-option-btn').forEach(function(b){b.classList.remove('selected');});
+        btn.classList.add('selected');
+        submitGameAnswer();
+    }
+}
+
+function submitGameAnswer() {
+    if (!gameState.canAnswer || gameState.selected.length === 0) return;
+    gameState.canAnswer = false;
+    var answer = gameState.selected.join('');
+    var isCorrect = checkGameAnswer(answer);
+    submitGameResult(answer, isCorrect);
+}
+
+function checkGameAnswer(answer) {
+    var correct = gameState.currentQ.answer.split(',').sort().join('');
+    return answer.split(',').sort().join('') === correct;
+}
+
+function submitGameResult(answer, isCorrect) {
+    // 立即显示自己的答题结果
+    var myResultEmoji = isCorrect ? '✅' : '❌';
+    var myResultMsg = isCorrect ? '你答对了！' : '你答错了！';
+    
+    console.log('[LOG] submitGameResult:', 'matchId=' + gameState.matchId, 'answer=' + answer, 'isCorrect=' + isCorrect);
+    fetch(API_URL + '/api/game/answer', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({match_id: gameState.matchId, user_id: currentUser.id, answer: answer, is_correct: isCorrect})
+    }).then(function(res){return res.json();}).then(function(data){
+        console.log('[LOG] submitGameResult response:', JSON.stringify(data));
+        if (data.success) {
+            document.getElementById('gameSubmitBtn').style.display = 'none';
+            gameState.waitingAnswer = true;
+            
+            if (data.round_result) {
+                // 双方都已答题，显示完整结果
+                var r = data.round_result;
+                var isP1 = gameState.isPlayer1;
+                var myDmg = isP1 ? r.p1_dmg : r.p2_dmg;
+                var myHp = isP1 ? r.p1_hp : r.p2_hp;
+                var oppHp = isP1 ? r.p2_hp : r.p1_hp;
+                var myCorrect = isP1 ? r.p1_correct : r.p2_correct;
+                var oppCorrect = isP1 ? r.p2_correct : r.p1_correct;
+                
+                var emoji = '';
+                var msg = '';
+                if (myCorrect && !oppCorrect) {
+                    emoji = '✅';
+                    msg = '你答对了！对方答错，对方扣除20血';
+                } else if (!myCorrect && oppCorrect) {
+                    emoji = '❌';
+                    msg = '你答错了！扣除' + myDmg + '血';
+                } else if (myCorrect && oppCorrect) {
+                    emoji = '🤝';
+                    msg = '双方都答对了！';
+                } else {
+                    emoji = '😔';
+                    msg = '双方都答错了！各扣除10血';
+                }
+                
+                document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">' + emoji + '</span><br>' + msg + '<br><span style="color:#999">我:' + myHp + ' 对手:' + oppHp + '</span>';
+                
+                gameState.hp = myHp;
+                gameState.opponentHp = oppHp;
+                document.getElementById('heroGameHp').style.width = (myHp / 100 * 100) + '%';
+                document.getElementById('enemyGameHp').style.width = (oppHp / 100 * 100) + '%';
+                
+                // 双方都已答题，自动进入下一题
+                gameState.waitingResult = true;
+                gameState.currentQ = null;  // 清空当前题目，允许加载新题
+                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">即将进入下一题...</div>';
+                
+                setTimeout(function(){
+                    nextGameQuestion();
+                }, 2000);
+            } else {
+                // 只有自己答题，显示自己的结果并等待对手
+                document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">' + myResultEmoji + '</span><br>' + myResultMsg + '<br><span style="color:#999">等待对手答题...</span>';
+                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">已提交答案，等待对手...</div>';
+            }
+        }
+    });
+}
+
+function sendGameHeartbeat() {
+    if (!gameState.matchId) return;
+    fetch(API_URL + '/api/game/heartbeat', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({match_id: gameState.matchId, user_id: currentUser.id})
+    }).catch(function(){});
+}
+
+function nextGameQuestion() {
+    // 用户点击"确定"按钮，准备进入下一题
+    console.log('[LOG] nextGameQuestion called, inGame=' + gameState.inGame + ', matchId=' + gameState.matchId);
+    gameState.waitingResult = false;
+    gameState.waitingAnswer = false;
+    gameState.currentQ = null;
+    document.getElementById('gameActionBtns').style.display = 'none';
+    document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">加载下一题...</div>';
+    document.getElementById('gameQText').textContent = '...';
+    document.getElementById('gameQType').textContent = '等待';
+    
+    // 立即轮询获取下一题
+    if (gameState.inGame && gameState.matchId) {
+        console.log('[LOG] nextGameQuestion calling pollGameState');
+        pollGameState();
+    } else {
+        console.log('[LOG] nextGameQuestion NOT calling pollGameState, inGame=' + gameState.inGame + ', matchId=' + gameState.matchId);
+    }
+}
+
+function buyGameItem(type) {
+    var prices = {heal: 5, shield: 8, dmg: 10};
+    var price = prices[type];
+    var currentGold = parseInt(document.getElementById('playerGold').textContent);
+    
+    if (currentGold < price) {
+        alert('金币不足！');
+        return;
+    }
+    
+    // 扣除金币
+    var newGold = currentGold - price;
+    document.getElementById('playerGold').textContent = newGold;
+    gameState.playerData.gold = newGold;
+    
+    // 添加道具到背包
+    var itemNames = {heal: '苹果', shield: '护盾', dmg: '狂暴'};
+    var itemEmojis = {heal: '🍎', shield: '🛡️', dmg: '⚡'};
+    gameState.inventory.push({e: itemEmojis[type], t: type, name: itemNames[type]});
+    renderGameInventory();
+    saveGameInventory();
+    
+    alert('购买成功！');
+}
+
+function useGameItem(idx) {
+    if (gameState.inGame) {
+        // 游戏中才能使用道具
+        var item = gameState.inventory[idx];
+        if (!item) return;
+        if (item.t === 'heal') {
+            gameState.hp = Math.min(gameState.maxHp, gameState.hp + 40);
+            showGameMessage('使用了苹果，恢复40血量');
+        } else if (item.t === 'shield') {
+            gameState.buffs.shield = true;
+            showGameMessage('使用护盾，下次伤害无效');
+        } else if (item.t === 'dmg') {
+            gameState.buffs.dmg = 2;
+            showGameMessage('使用狂暴，下次伤害翻倍');
+        }
+        gameState.inventory.splice(idx, 1);
+        renderGameInventory();
+        updateGameUI();
+        saveGameInventory();
+    }
+}
+
+function showGameMessage(msg) {
+    document.getElementById('gameMessage').textContent = msg;
+}
+
+async function saveGameInventory() {
+    try {
+        await fetch(API_URL + '/api/game/inventory', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({user_id: currentUser.id, inventory: gameState.inventory})
+        });
+    } catch(e) {console.error(e);}
+}
+
+function quitGame(forced) {
+    if (!forced && !confirm('确定要认输退出吗？')) return;
+    if (gamePollTimer) clearTimeout(gamePollTimer);
+    if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
+    
+    // 保存matchId，然后清空状态
+    var matchId = gameState.matchId;
+    gameState.inGame = false;
+    gameState.inMatching = false;
+    gameState.matchId = null;
+    gameState.currentQ = null;
+    
+    // 立即显示游戏大厅
+    document.getElementById('gameLobbyArea').style.display = 'block';
+    document.getElementById('gamePlayArea').style.display = 'none';
+    
+    fetch(API_URL + '/api/game/quit', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({match_id: matchId, user_id: currentUser.id})
+    }).then(function(res){return res.json();}).then(function(){
+        showGameResult(false, '你认输了', 0);
+    }).catch(function(){
+        showGameResult(false, '你认输了', 0);
+    });
+}
+
+function handleGameOver(data) {
+    if (gamePollTimer) clearTimeout(gamePollTimer);
+    if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
+    gameState.inGame = false;
+    gameState.inMatching = false;
+    gameState.matchId = null;
+    
+    var isWin = data.winner === currentUser.id || data.winner == currentUser.id;
+    var isDraw = data.winner === 'draw' || data.winner === 'draw';
+    
+    if (isWin) {
+        var gold = Math.floor(Math.random() * 11) + 10;
+        showGameResult(true, '胜利！', gold);
+    } else if (isDraw) {
+        showGameResult('draw', '平局！', 0);
+    } else {
+        showGameResult(false, '失败了', 0);
+    }
+}
+
+function showGameResult(win, title, gold) {
+    // 完全重置游戏状态
+    gameState.matchId = null;
+    gameState.opponent = null;
+    gameState.inGame = false;
+    gameState.inMatching = false;
+    gameState.currentQ = null;
+    gameState.currentQIdx = 0;
+    gameState.waitingResult = false;
+    gameState.waitingAnswer = false;
+    gameState.hp = 100;
+    gameState.opponentHp = 100;
+    gameState.buffs = {dmg:0, shield:false};
+    
+    // 停止所有定时器
+    if (gamePollTimer) clearTimeout(gamePollTimer);
+    if (gameHeartbeatTimer) clearInterval(gameHeartbeatTimer);
+    
+    // 隐藏游戏对战区域，显示游戏大厅
+    document.getElementById('gamePlayArea').style.display = 'none';
+    document.getElementById('gameLobbyArea').style.display = 'block';
+    document.getElementById('matchBtn').disabled = false;
+    document.getElementById('matchBtn').textContent = '🎮 开始匹配';
+    document.getElementById('matchStatus').textContent = '点击开始匹配';
+    
+    var modal = document.getElementById('gameResultModal');
+    modal.style.display = 'flex';
+    document.getElementById('resultEmoji').textContent = win === true ? '🏆' : (win === 'draw' ? '🤝' : '💔');
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultDesc').textContent = win === true ? '恭喜你战胜了对手！' : (win === 'draw' ? '势均力敌！' : '再接再厉！');
+    var rewards = '';
+    if (win === true) {
+        rewards = '🎖️ +1 勋章<br>💰 +' + gold + ' 金币';
+        document.getElementById('playerMedals').textContent = parseInt(document.getElementById('playerMedals').textContent) + 1;
+        document.getElementById('playerGold').textContent = parseInt(document.getElementById('playerGold').textContent) + gold;
+        document.getElementById('playerWins').textContent = parseInt(document.getElementById('playerWins').textContent) + 1;
+    }
+    document.getElementById('resultRewards').innerHTML = rewards || '没有奖励';
+    loadPlayerGameData();
+    loadGameLeaderboard();
+}
+
+function showRoundResult(isP1, p1Correct, p2Correct, p1Dmg, p2Dmg, p1Hp, p2Hp) {
+    var emoji = '';
+    var message = '';
+    var myCorrect = isP1 ? p1Correct : p2Correct;
+    var myDmg = isP1 ? p2Dmg : p1Dmg;
+    
+    if (myCorrect && !myDmg) {
+        emoji = '✅';
+        message = '你答对了！对手答错，对方扣除20血！';
+    } else if (!myCorrect && myDmg > 0) {
+        emoji = '❌';
+        message = '你答错了！扣除' + myDmg + '血量';
+    } else if (myCorrect && myDmg === 0) {
+        emoji = '🤝';
+        message = '双方都答对！继续加油';
+    } else {
+        emoji = '😔';
+        message = '双方都答错！各扣除10血量';
+    }
+    
+    var hpText = '我方: ' + (isP1 ? p1Hp : p2Hp) + ' | 对手: ' + (isP1 ? p2Hp : p1Hp);
+    
+    document.getElementById('gameMessage').innerHTML = '<span style="font-size:24px">' + emoji + '</span><br>' + message + '<br><span style="color:#999;font-size:14px">' + hpText + '</span>';
+    
+    gameState.hp = isP1 ? p1Hp : p2Hp;
+    gameState.opponentHp = isP1 ? p2Hp : p1Hp;
+    document.getElementById('heroGameHp').style.width = (gameState.hp / gameState.maxHp * 100) + '%';
+    document.getElementById('enemyGameHp').style.width = (gameState.opponentHp / gameState.opponentMaxHp * 100) + '%';
+}
+
+function closeGameResult() {
+    document.getElementById('gameResultModal').style.display = 'none';
+}
+
+async function loadGameLeaderboard() {
+    try {
+        var res = await fetch(API_URL + '/api/game/leaderboard');
+        var data = await res.json();
+        var tbody = document.getElementById('leaderboardBody');
+        var html = '';
+        data.leaderboard.forEach(function(p, i) {
+            html += '<tr><td>' + (i+1) + '</td><td>' + (p.full_name || p.username) + '</td><td>' + p.medals + '</td><td>' + p.wins + '</td></tr>';
+        });
+        tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:#999">暂无数据</td></tr>';
+    } catch(e) {console.error(e);}
+}
+
+initSession();
+</script>
+</body>
+</html>

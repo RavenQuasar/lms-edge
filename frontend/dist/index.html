@@ -1913,6 +1913,38 @@ function pollGameState() {
                 return;
             }
             
+            // 检查是否收到回合结果（对方先答）
+            if (data.round_result && !gameState.waitingResult) {
+                var r = data.round_result;
+                var isP1 = gameState.isPlayer1;
+                var myDmg = isP1 ? r.p1_dmg : r.p2_dmg;
+                var myHp = isP1 ? r.p1_hp : r.p2_hp;
+                var oppHp = isP1 ? r.p2_hp : r.p1_hp;
+                
+                var emoji = '';
+                var msg = '';
+                if (myDmg === 0) {
+                    emoji = '✅';
+                    msg = '你答对了！';
+                    if (isP1 ? !r.p2_correct : !r.p1_correct) {
+                        msg += '对方答错，扣除20血';
+                    } else {
+                        msg += '对方也答对';
+                    }
+                } else {
+                    emoji = '❌';
+                    msg = '你答错了！扣除' + myDmg + '血';
+                }
+                
+                document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">' + emoji + '</span><br>' + msg + '<br><span style="color:#999">我:' + myHp + ' 对手:' + oppHp + '</span>';
+                
+                gameState.hp = myHp;
+                gameState.opponentHp = oppHp;
+                gameState.waitingResult = true;
+                document.getElementById('heroGameHp').style.width = (myHp / 100 * 100) + '%';
+                document.getElementById('enemyGameHp').style.width = (oppHp / 100 * 100) + '%';
+            }
+            
             // 检查是否进入下一题
             if (data.current_question && !gameState.currentQ) {
                 // 第一次加载题目或题目未显示

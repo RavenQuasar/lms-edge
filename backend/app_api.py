@@ -1158,6 +1158,32 @@ def get_game_state():
     # 判断当前玩家是否已经答题
     player_answered = match['player1_answered'] if is_p1 else match['player2_answered']
     
+    # 检查是否需要返回上一回合的结果
+    last_round_result = match.get('last_round_result')
+    if last_round_result and last_round_result.get('processed_by') != user_id:
+        # 返回上一回合结果给尚未处理的玩家
+        lrr = last_round_result
+        is_p1 = match['player1'] == user_id
+        return jsonify({
+            'success': True,
+            'game_over': False,
+            'round_result': {
+                'p1_correct': lrr['p1_correct'],
+                'p2_correct': lrr['p2_correct'],
+                'p1_dmg': lrr['p1_dmg'],
+                'p2_dmg': lrr['p2_dmg'],
+                'p1_hp': lrr['p1_hp'],
+                'p2_hp': lrr['p2_hp']
+            },
+            'hp': lrr['p1_hp'] if is_p1 else lrr['p2_hp'],
+            'opponent_hp': lrr['p2_hp'] if is_p1 else lrr['p1_hp'],
+            'current_question': current_q,
+            'current_question_idx': current_idx,
+            'both_answered': both_answered,
+            'player_answered': player_answered,
+            'total_questions': len(match['questions'])
+        })
+    
     return jsonify({
         'success': True,
         'game_over': False,
@@ -1230,6 +1256,17 @@ def submit_game_answer():
         
         match['player1_hp'] = max(0, match['player1_hp'] - dmg_p1)
         match['player2_hp'] = max(0, match['player2_hp'] - dmg_p2)
+        
+        # 记录回合结果供双方查看
+        match['last_round_result'] = {
+            'p1_correct': p1_correct,
+            'p2_correct': p2_correct,
+            'p1_dmg': dmg_p1,
+            'p2_dmg': dmg_p2,
+            'p1_hp': match['player1_hp'],
+            'p2_hp': match['player2_hp'],
+            'processed_by': user_id
+        }
         
         # 记录回合结果供前端显示
         round_result = {

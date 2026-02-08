@@ -1709,6 +1709,19 @@ var gameHeartbeatTimer = null;
 var GAME_ITEMS = {heal:{e:'🍎',t:'heal'},shield:{e:'🛡️',t:'shield'},dmg:{e:'⚡',t:'dmg'}};
 
 async function initGame() {
+    // 重置游戏状态
+    gameState.inGame = false;
+    gameState.inMatching = false;
+    gameState.matchId = null;
+    gameState.currentQ = null;
+    gameState.waitingResult = false;
+    gameState.hp = 100;
+    gameState.opponentHp = 100;
+    
+    // 确保显示游戏大厅，隐藏游戏对战区域
+    document.getElementById('gameLobbyArea').style.display = 'block';
+    document.getElementById('gamePlayArea').style.display = 'none';
+    
     loadPlayerGameData();
     loadGameLeaderboard();
     
@@ -1801,6 +1814,9 @@ async function checkMyGameMatch() {
             gameState.inGame = false;
             gameState.inMatching = false;
             gameState.matchId = null;
+            // 确保显示游戏大厅
+            document.getElementById('gameLobbyArea').style.display = 'block';
+            document.getElementById('gamePlayArea').style.display = 'none';
             document.getElementById('matchStatus').textContent = '点击开始匹配';
             document.getElementById('matchBtn').disabled = false;
             document.getElementById('matchBtn').textContent = '🎮 开始匹配';

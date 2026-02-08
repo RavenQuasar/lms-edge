@@ -1973,7 +1973,6 @@ function pollGameState() {
                 gameState.waitingAnswer = true;
                 document.getElementById('gameMessage').textContent = '⏳ 已答题，等待对手...';
                 document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';
-            }
             } else if (!data.current_question && data.current_question_idx >= data.total_questions) {
                 // 所有题目答完了
                 handleGameOver({winner: data.hp > data.opponent_hp ? currentUser.id : (data.hp < data.opponent_hp ? 'opponent' : 'draw')});

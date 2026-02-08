@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# LMS-Edge 手动部署步骤 - Jetson Nano
+# 请在 Jetson Nano 上按顺序执行以下命令
+
+PROJECT_DIR="$HOME/lms-edge"
+BACKEND_DIR="$PROJECT_DIR/lms-edge/backend"
+
+echo "========================================="
+echo "  LMS-Edge Jetson Nano 部署指南"
+echo "========================================="
+echo ""
+
+echo "步骤 1: 安装 Python 依赖"
+echo "------------------------"
+echo "sudo apt-get update"
+echo "sudo apt-get install -y python3-pip python3-venv git nginx"
+echo ""
+
+echo "步骤 2: 创建项目目录"
+echo "------------------------"
+echo "mkdir -p $BACKEND_DIR/data"
+echo "mkdir -p $BACKEND_DIR/logs"
+echo "mkdir -p $BACKEND_DIR/uploads"
+echo "mkdir -p $BACKEND_DIR/static"
+echo ""
+
+echo "步骤 3: 安装 Python 包"
+echo "------------------------"
+echo "cd $BACKEND_DIR"
+echo "pip3 install --user fastapi uvicorn aiosqlite pydantic python-jose passlib bcrypt python-multipart python-dotenv websockets psutil"
+echo ""
+
+echo "步骤 4: 初始化数据库"
+echo "------------------------"
+echo "python3 init_users.py"
+echo ""
+
+echo "步骤 5: 启动服务"
+echo "------------------------"
+echo "cd $BACKEND_DIR"
+echo "python3 main.py"
+echo ""
+
+echo "步骤 6: 访问系统"
+echo "------------------------"
+echo "浏览器访问: http://localhost:8000"
+echo ""
+
+echo "========================================="
+echo "默认用户:"
+echo "  管理员: admin / admin123"
+echo "  老师:   teacher / teacher123"
+echo "  学生:   student / student123"
+echo "========================================="

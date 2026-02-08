@@ -1,0 +1,16 @@
+[Unit]
+Description=LMS-Edge Flask API Server
+After=network.target
+
+[Service]
+Type=simple
+User=raven
+WorkingDirectory=/home/raven/lms-edge/backend
+Environment="DB_PATH=/home/raven/lms-edge/backend/data/lms.db"
+Environment="STATIC_DIR=/home/raven/lms-edge/backend/static"
+ExecStart=/usr/bin/python3 /home/raven/lms-edge/backend/app_api.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

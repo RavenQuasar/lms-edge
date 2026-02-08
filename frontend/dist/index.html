@@ -1913,7 +1913,7 @@ function pollGameState() {
                 return;
             }
             
-            // 检查是否收到回合结果（对方先答）
+            // 检查是否收到回合结果
             if (data.round_result && !gameState.waitingResult) {
                 var r = data.round_result;
                 var isP1 = gameState.isPlayer1;
@@ -1940,12 +1940,12 @@ function pollGameState() {
                 
                 gameState.hp = myHp;
                 gameState.opponentHp = oppHp;
-                gameState.waitingResult = true;
                 document.getElementById('heroGameHp').style.width = (myHp / 100 * 100) + '%';
                 document.getElementById('enemyGameHp').style.width = (oppHp / 100 * 100) + '%';
                 
-                // 清除当前题目状态，准备加载下一题
+                // 清除当前题目，准备加载下一题
                 gameState.currentQ = null;
+                gameState.waitingResult = true;
                 
                 // 延迟加载下一题
                 setTimeout(function(){
@@ -1968,26 +1968,12 @@ function pollGameState() {
                 gameState.currentQIdx = data.current_question_idx;
                 gameState.waitingAnswer = false;
                 showGameQuestion(data.current_question);
-            } else if (data.current_question) {
-                // 同一题，检查状态
-                if (data.both_answered) {
-                    // 双方都答完了，等待显示结果
-                    if (!gameState.waitingResult) {
-                        gameState.waitingResult = true;
-                        document.getElementById('gameMessage').textContent = '双方都答完了，判定中...';
-                        document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待判定结果...</div>';
-                        // 2秒后刷新状态
-                        setTimeout(function(){
-                            gameState.waitingResult = false;
-                            pollGameState();
-                        }, 2000);
-                    }
-                } else if (data.player_answered) {
-                    // 当前玩家已答，等待对手
-                    gameState.waitingAnswer = true;
-                    document.getElementById('gameMessage').textContent = '⏳ 已答题，等待对手...';
-                    document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';
-                }
+            } else if (data.player_answered && !gameState.waitingResult) {
+                // 当前玩家已答，等待对手
+                gameState.waitingAnswer = true;
+                document.getElementById('gameMessage').textContent = '⏳ 已答题，等待对手...';
+                document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">等待对手答题...</div>';
+            }
             } else if (!data.current_question && data.current_question_idx >= data.total_questions) {
                 // 所有题目答完了
                 handleGameOver({winner: data.hp > data.opponent_hp ? currentUser.id : (data.hp < data.opponent_hp ? 'opponent' : 'draw')});

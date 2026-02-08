@@ -1709,7 +1709,8 @@ var gameHeartbeatTimer = null;
 var GAME_ITEMS = {heal:{e:'🍎',t:'heal'},shield:{e:'🛡️',t:'shield'},dmg:{e:'⚡',t:'dmg'}};
 
 async function initGame() {
-    console.log('initGame called, resetting state...');
+    console.log('[DEBUG] initGame called - user entering game');
+    console.log('[DEBUG] initGame - resetting state');
     
     // 停止所有游戏定时器
     if (gamePollTimer) clearTimeout(gamePollTimer);
@@ -1865,7 +1866,8 @@ function renderGameInventory() {
 }
 
 async function startMatch() {
-    var btn = document.getElementById('matchBtn');
+        console.log('[DEBUG] startMatch - user clicked match button');
+        var btn = document.getElementById('matchBtn');
     btn.disabled = true;
     btn.textContent = '匹配中...';
     document.getElementById('matchStatus').textContent = '正在寻找对手...';
@@ -1879,8 +1881,9 @@ async function startMatch() {
             body:JSON.stringify({user_id: currentUser.id})
         });
         var data = await res.json();
-        console.log('startMatch response:', data);
+        console.log('[DEBUG] startMatch response:', data.match_id);
         if (data.success) {
+            console.log('[DEBUG] Match created:', data.match_id);
             gameState.inMatching = false;
             gameState.inGame = true;
             gameState.matchId = data.match_id;
@@ -2035,7 +2038,7 @@ function pollGameState() {
             // 检查是否收到回合结果（优先处理）
             console.log('[LOG] Checking round_result:', 'data.round_result=' + !!data.round_result, 'waitingResult=' + gameState.waitingResult, 'both_answered=' + data.both_answered);
             if (data.round_result && !gameState.waitingResult) {
-                console.log('[LOG] Processing round_result:', JSON.stringify(data.round_result));
+                console.log('[DEBUG] Both players answered! Processing round_result:', JSON.stringify(data.round_result));
                 var r = data.round_result;
                 var isP1 = gameState.isPlayer1;
                 var myDmg = isP1 ? r.p1_dmg : r.p2_dmg;
@@ -2043,6 +2046,7 @@ function pollGameState() {
                 var oppHp = isP1 ? r.p2_hp : r.p1_hp;
                 var myCorrect = isP1 ? r.p1_correct : r.p2_correct;
                 var oppCorrect = isP1 ? r.p2_correct : r.p1_correct;
+                console.log('[DEBUG] Result:', 'myCorrect=' + myCorrect, 'oppCorrect=' + oppCorrect, 'myHp=' + myHp, 'oppHp=' + oppHp);
                 
                 var emoji = '';
                 var msg = '';
@@ -2146,7 +2150,11 @@ function showGameQuestion(q) {
 }
 
 function selectGameOption(idx, btn, letter, isMulti) {
-    if (!gameState.canAnswer) return;
+    console.log('[DEBUG] selectGameOption:', letter, 'canAnswer:', gameState.canAnswer);
+    if (!gameState.canAnswer) {
+        console.log('[DEBUG] Cannot answer - canAnswer is false');
+        return;
+    }
     if (isMulti) {
         if (gameState.selected.includes(letter)) {
             gameState.selected = gameState.selected.filter(function(t){return t !== letter;});
@@ -2166,10 +2174,16 @@ function selectGameOption(idx, btn, letter, isMulti) {
 }
 
 function submitGameAnswer() {
-    if (!gameState.canAnswer || gameState.selected.length === 0) return;
+    console.log('[DEBUG] submitGameAnswer called - selected:', gameState.selected);
+    if (!gameState.canAnswer || gameState.selected.length === 0) {
+        console.log('[DEBUG] submitGameAnswer early return');
+        return;
+    }
     gameState.canAnswer = false;
     var answer = gameState.selected.join('');
+    console.log('[DEBUG] Answer:', answer);
     var isCorrect = checkGameAnswer(answer);
+    console.log('[DEBUG] isCorrect:', isCorrect);
     submitGameResult(answer, isCorrect);
 }
 
@@ -2179,9 +2193,8 @@ function checkGameAnswer(answer) {
 }
 
 function submitGameResult(answer, isCorrect) {
-    // 立即显示自己的答题结果
-    var myResultEmoji = isCorrect ? '✅' : '❌';
-    var myResultMsg = isCorrect ? '你答对了！' : '你答错了！';
+    console.log('[DEBUG] submitGameResult - sending to backend:', answer, isCorrect);
+    console.log('[DEBUG] currentQ:', gameState.currentQ);
     
     console.log('[LOG] submitGameResult:', 'matchId=' + gameState.matchId, 'answer=' + answer, 'isCorrect=' + isCorrect);
     fetch(API_URL + '/api/game/answer', {

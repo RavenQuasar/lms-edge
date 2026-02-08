@@ -1228,9 +1228,8 @@ def submit_game_answer():
     match_id = data.get('match_id')
     user_id = data.get('user_id')
     answer = data.get('answer')
-    is_correct = data.get('is_correct')
     
-    logger.info(f"[API] submit_game_answer called: match_id={match_id}, user_id={user_id}, answer={answer}, is_correct={is_correct}")
+    logger.info(f"[API] submit_game_answer called: match_id={match_id}, user_id={user_id}, answer={answer}")
     
     matches = load_json(MATCHES_FILE, [])
     match = None
@@ -1246,17 +1245,22 @@ def submit_game_answer():
     
     is_p1 = match['player1'] == user_id
     
+    # 后端自己判断答案对错
+    current_q = match['questions'][match['current_question_idx']]
+    correct_answer = current_q['answer']
+    user_correct = sorted(answer.split(',')) == sorted(correct_answer.split(','))
+    
     # 更新答案状态
     if is_p1:
         match['player1_answer'] = answer
-        match['player1_correct'] = is_correct
+        match['player1_correct'] = user_correct
         match['player1_answered'] = True
-        logger.info(f"[API] Player {user_id} (P1) answered: {answer}, correct={is_correct}")
+        logger.info(f"[API] Player {user_id} (P1) answered: {answer}, correct={user_correct}, expected={correct_answer}")
     else:
         match['player2_answer'] = answer
-        match['player2_correct'] = is_correct
+        match['player2_correct'] = user_correct
         match['player2_answered'] = True
-        logger.info(f"[API] Player {user_id} (P2) answered: {answer}, correct={is_correct}")
+        logger.info(f"[API] Player {user_id} (P2) answered: {answer}, correct={user_correct}, expected={correct_answer}")
     
     logger.info(f"[API] Both answered: P1={match['player1_answered']}, P2={match['player2_answered']}")
     
@@ -1269,20 +1273,29 @@ def submit_game_answer():
         dmg_p1 = 0
         dmg_p2 = 0
         
+        p1_correct = match['player1_correct']
+        p2_correct = match['player2_correct']
+        
+        logger.info(f"[API] Damage calculation: P1_correct={p1_correct}, P2_correct={p2_correct}")
+        
         if p1_correct and p2_correct:
             # 双方都对 - 都不掉血
             dmg_p1 = 0
             dmg_p2 = 0
+            logger.info(f"[API] Both correct - no damage")
         elif p1_correct and not p2_correct:
             # P1对P2错 - P2掉血
             dmg_p2 = 20
+            logger.info(f"[API] P1 correct, P2 wrong - P2 takes 20 damage")
         elif not p1_correct and p2_correct:
             # P1错P2对 - P1掉血
             dmg_p1 = 20
+            logger.info(f"[API] P1 wrong, P2 correct - P1 takes 20 damage")
         else:
             # 双方都错 - 各掉10血
             dmg_p1 = 10
             dmg_p2 = 10
+            logger.info(f"[API] Both wrong - both take 10 damage")
         
         match['player1_hp'] = max(0, match['player1_hp'] - dmg_p1)
         match['player2_hp'] = max(0, match['player2_hp'] - dmg_p2)

@@ -2066,6 +2066,7 @@ function pollGameState() {
                 
                 // 双方都已答题，显示结果后自动进入下一题
                 gameState.waitingResult = true;
+                gameState.currentQ = null;  // 清空当前题目，允许加载新题
                 document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px;font-size:16px">即将进入下一题...</div>';
                 
                 setTimeout(function(){
@@ -2221,6 +2222,7 @@ function submitGameResult(answer, isCorrect) {
                 
                 // 双方都已答题，自动进入下一题
                 gameState.waitingResult = true;
+                gameState.currentQ = null;  // 清空当前题目，允许加载新题
                 document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">即将进入下一题...</div>';
                 
                 setTimeout(function(){

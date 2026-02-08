@@ -1160,8 +1160,20 @@ def get_game_state():
     
     # 检查是否需要返回上一回合的结果
     last_round_result = match.get('last_round_result')
-    if last_round_result and last_round_result.get('processed_by') != user_id:
-        # 返回上一回合结果给尚未处理的玩家
+    
+    if last_round_result:
+        # 检查当前玩家是否已处理过上一回合结果
+        processed_by = last_round_result.get('processed_by', [])
+        if not isinstance(processed_by, list):
+            processed_by = [processed_by] if processed_by else []
+        
+        # 如果当前玩家还没处理过，添加他到列表
+        if user_id not in processed_by:
+            processed_by.append(user_id)
+            match['last_round_result']['processed_by'] = processed_by
+            save_json(MATCHES_FILE, matches)
+        
+        # 返回上一回合结果（both_answered设为True，因为确实双方都答了）
         lrr = last_round_result
         is_p1 = match['player1'] == user_id
         return jsonify({
@@ -1179,8 +1191,8 @@ def get_game_state():
             'opponent_hp': lrr['p2_hp'] if is_p1 else lrr['p1_hp'],
             'current_question': current_q,
             'current_question_idx': current_idx,
-            'both_answered': both_answered,
-            'player_answered': player_answered,
+            'both_answered': True,  # 上一回合双方都答了
+            'player_answered': True,  # 当前玩家已答上一题
             'total_questions': len(match['questions'])
         })
     
@@ -1265,7 +1277,8 @@ def submit_game_answer():
             'p2_dmg': dmg_p2,
             'p1_hp': match['player1_hp'],
             'p2_hp': match['player2_hp'],
-            'processed_by': user_id
+            'question_idx': match['current_question_idx'],
+            'processed_by': []
         }
         
         # 记录回合结果供前端显示

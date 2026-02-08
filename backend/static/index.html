@@ -2239,7 +2239,7 @@ function submitGameResult(answer) {
                 }, 2000);
             } else {
                 // 只有自己答题，显示自己的结果并等待对手
-                document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">' + myResultEmoji + '</span><br>' + myResultMsg + '<br><span style="color:#999">等待对手答题...</span>';
+                document.getElementById('gameMessage').innerHTML = '<span style="font-size:20px">⏳</span><br>已提交答案，等待对手...';
                 document.getElementById('gameOptions').innerHTML = '<div style="text-align:center;color:#999;padding:20px">已提交答案，等待对手...</div>';
             }
         }
